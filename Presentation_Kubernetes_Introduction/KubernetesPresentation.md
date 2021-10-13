@@ -25,7 +25,7 @@ The original Borg project was written entirely in C++, but the rewritten Kuberne
 
 <b>Revision History of Kubernetes </b>
 
-<img src=".\img\p1_kubernetes_versions.jpg"/>
+<img src=".\images\p1_kubernetes_versions.jpg"/>
 
 ### Future of Kubernetes
 
@@ -43,11 +43,11 @@ Development and deployment of applications has changed in recent years. This cha
 
 The problems in monolithic applications have forced the community to start splitting complex monolithic applications into smaller independently deployable components called <b>microservices</b>. Each microservice runs as an independent process and communicates with other microservices through simple, well-defined interfaces (APIs).
 
-<img src=".\img\p1_monolith_to_distributed.jpg"/>
+<img src=".\images\p1_monolith_to_distributed.jpg"/>
 
 Microservices allows to horizontally scale the parts that allow scaling out, and scale the parts that don’t, vertically instead of horizontally.
 
-<img src=".\img\p1_traditional_scaling_microservice.jpg"/>
+<img src=".\images\p1_traditional_scaling_microservice.jpg"/>
 
 Microservices also have drawbacks. When your system consists of only a small number of deployable components, managing those components is easy. It’s trivial to decide where to deploy each component, because there aren’t that many choices. When the number of those components increases, deployment-related decisions become increasingly difficult because not only does the number of deployment combinations increase, but the number of inter-dependencies between the components increases by an even greater factor.
 
@@ -59,7 +59,7 @@ Solutions follows:
 * Providing a consistent and isolated environment to each application
 * Moving to continuous delivery (DevOps)
 
-<img src=".\img\p1_kubernetes_container_evolution.jpg"/>
+<img src=".\images\p1_kubernetes_container_evolution.jpg"/>
 
 Kubernetes provides you with a framework to run distributed systems resiliently. It takes care of scaling and failover for your application, provides deployment patterns, and more.
 
@@ -79,7 +79,7 @@ Kubernetes provides you with:
 
 Kubernetes enables you to run your software applications on thousands of computer nodes as if all those nodes were a single, enormous computer. It abstracts away the underlying infrastructure and, by doing so, simplifies development, deployment, and management for both development and the operations teams.
 
-<img src=".\img\p1_kubernetes_userview.jpg"/>
+<img src=".\images\p1_kubernetes_userview.jpg"/>
 
     Helps dev teams focus on the core application features
     Helps ops teams achieve better resource utilization
@@ -122,7 +122,7 @@ The description includes information about:
 
 ### How it works
 
-<img src=".\img\p1_kubernetes_working_logic.jpg"/>
+<img src=".\images\p1_kubernetes_working_logic.jpg"/>
 
 When the API server processes your app’s description, the Scheduler schedules the specified groups of containers onto the available worker nodes based on computational resources required by each group and the unallocated resources on each node at that moment. The Kubelet on those nodes then instructs the Container Runtime (Docker, for example) to pull the required container images and run the containers.
 
@@ -163,11 +163,11 @@ A <b>Kubernetes cluster</b> is a set of node machines (virtual or physical) for 
 
 A <b>Node</b> is a machine (physical or virtual) on which Kubernetes is installed. A Node is a worker machine, and that is where containers will be launched by Kubernetes.
 
-<img src=".\img\p2_cluster_single_node.jpg"/>
+<img src=".\images\p2_cluster_single_node.jpg"/>
 
 If the Node on which your application is running fails, our application goes down. so we need to have more than one Nodes. A Cluster is a set of Nodes grouped together, If one Node fails, our application is still accessible from the other Nodes. Moreover, having multiple Nodes helps in sharing load as well. 
 
-<img src=".\img\p2_cluster_multi_node.jpg"/>
+<img src=".\images\p2_cluster_multi_node.jpg"/>
 
 In a Cluster, we need a master who is responsible for managing the Cluster, store the information about members of the Cluster, monitor the status of Nodes and move the workload of the failed Node to another Worker Node. 
 
@@ -175,7 +175,7 @@ The Master is another Node with Kubernetes installed in it and is configured as 
 
 The control plane is responsible for maintaining the desired state of the cluster, such as which applications are running and which container images they use. Nodes actually run the applications and workloads.
 
-<img src=".\img\p2_kubernetes_components.jpg"/>
+<img src=".\images\p2_kubernetes_components.jpg"/>
 
 When you install Kubernetes on a system, you're actually installing the following components, 
 
@@ -264,7 +264,7 @@ In the .yaml file for the Kubernetes object you want to create, you'll need to s
 
 The precise format of the object spec is different for every Kubernetes object, and contains nested fields specific to that object. 
 
-<img src=".\img\p3_example_yaml.jpg"/>
+<img src=".\images\p3_example_yaml.jpg"/>
 
 ## Namespace
 
@@ -303,7 +303,7 @@ In Kubernetes, instead of deploying containers individually, you always deploy a
 
     When a pod contains multiple containers, all of them are always run on a single worker node—it never spans multiple worker nodes. 
 
-<img src=".\img\p3_pod_node_relation.jpg"/>
+<img src=".\images\p3_pod_node_relation.jpg"/>
 
     In Kubernetes, pods live and die, not individual containers.
 
@@ -330,7 +330,7 @@ Deciding when to use multiple containers in a pod:
 
 A container shouldn’t run multiple processes. A pod shouldn’t contain multiple containers if they don’t need to run on the same machine.
 
-<img src=".\img\p3_multicontainer_in_a_pod_misusage.jpg"/>
+<img src=".\images\p3_multicontainer_in_a_pod_misusage.jpg"/>
 
 Usually you don't need to create Pods directly, even singleton Pods. Instead, create them using workload resources such as Deployment or Job.
 
@@ -346,16 +346,16 @@ The pod definition consists following main parts:
 
     The status part contains read-only runtime data that shows the state of the resource at a given moment. When creating a new pod, you never need to provide the status part.
 
-<img src=".\img\p3_pod_example_yaml.jpg"/>
+<img src=".\images\p3_pod_example_yaml.jpg"/>
 
 ### Organizing Pods with Labels
 With microservices architectures, the number of deployed microservices can easily reach high values. Those components will probably be replicated (multiple copies of the same component will be deployed) and multiple versions or releases (stable, beta, canary, and so on) will run concurrently. This can lead to hundreds of pods in the system. Without a mechanism for organizing them, you end up with a big, incomprehensible mess.
 
-<img src=".\img\p3_uncategorized_pods_example.jpg"/>
+<img src=".\images\p3_uncategorized_pods_example.jpg"/>
 
 Organizing pods and all other Kubernetes objects is done through labels.
 
-<img src=".\img\p3_categorized_pods_example.jpg"/>
+<img src=".\images\p3_categorized_pods_example.jpg"/>
 
 Labels go hand in hand with label selectors. Label selectors allow you to select a subset of pods tagged with certain labels and perform an operation on those pods. A label selector is a criterion, which filters resources based on whether they include a certain label with a certain value.
 
@@ -365,7 +365,7 @@ Labels and label selectors can be used to constrain pod scheduling. As an exampl
 
 Now imagine you want to deploy a new pod that needs a GPU to perform its work. To ask the scheduler to only choose among the nodes that provide a GPU, you’ll add a node selector to the pod’s YAML.
 
-<img src=".\img\p3_nodeselector_example_yaml.jpg"/>
+<img src=".\images\p3_nodeselector_example_yaml.jpg"/>
 
 ## ReplicaSet
 
