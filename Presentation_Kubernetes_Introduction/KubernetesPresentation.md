@@ -268,30 +268,29 @@ The precise format of the object spec is different for every Kubernetes object, 
 
 ## Namespace
 
-A single cluster should be able to satisfy the needs of multiple users or groups of users (henceforth a 'user community').
+A single cluster should be able to satisfy the needs of multiple users or groups of users. Kubernetes namespaces help different projects, teams, or customers to share a Kubernetes cluster. Kubernetes namespaces also provide a scope for objects names. Using multiple namespaces allows you to split complex systems with numerous components into smaller distinct groups. Resource names only need to be unique within a namespace. Two different namespaces can contain resources of the same name. 
 
-Kubernetes namespaces help different projects, teams, or customers to share a Kubernetes cluster.
+Kubernetes starts with four initial namespaces:
 
-It does this by providing the following:
+* <i>default</i>:  The default namespace for objects with no other namespace
 
-A scope for Names.
-A mechanism to attach authorization and policy to a subsection of the cluster.
-Use of multiple namespaces is optional.
+* <i>kube-system</i>: The namespace for objects created by the Kubernetes system
 
-Each user community wants to be able to work in isolation from other communities.
+* <i>kube-public</i>: This namespace is created automatically and is readable by all users. This namespace is mostly reserved for cluster usage, in case that some resources should be visible and readable publicly throughout the whole cluster. 
 
-Each user community has its own:
+* <i>kube-node-lease</i>: This namespace holds Lease objects associated with each node. Node leases allow the kubelet to send heartbeats so that the control plane can detect node failure
 
-resources (pods, services, replication controllers, etc.)
-policies (who can or cannot perform actions in their community)
-constraints (this community is allowed this much quota, etc.)
-A cluster operator may create a Namespace for each unique user community.
+### Creating namespaces
+A namespace is a Kubernetes resource like any other, so namespaces can be created by posting a YAML file to the Kubernetes API server.
 
-The Namespace provides a unique scope for:
 
-named resources (to avoid basic naming collisions)
-delegated management authority to trusted users
-ability to limit community resource consumption
+<img src=".\images\p3_create_ns_yaml_example.jpg"/>
+
+### Discovering namespaces
+
+    >- kubectl get ns
+    >- kubectl get po --ns kube-system
+
 
 ## Pod
 
@@ -367,7 +366,127 @@ Now imagine you want to deploy a new pod that needs a GPU to perform its work. T
 
 <img src=".\images\p3_nodeselector_example_yaml.jpg"/>
 
-## ReplicaSet
+### Removing Pods
+
+Delete pod by name: <i>kubectl delete po pod-name</i>
+
+Deleting pods using label selectors: <i>kubectl delete po -l label=value</i>
+
+Deleting all pods in a namespace :<i>kubectl delete po --all</i>
+
+Deleting pods by deleting the whole namespace: <i>kubectl delete ns custom_namespace</i>
+
+
+## ReplicationController
+
+In real-world use cases, you want your deployments to stay up and running automatically and remain healthy without any manual intervention. To do this, you almost never create pods directly. Instead, you create other types of resources to create and manage the actual pods.
+
+A ReplicationController is a Kubernetes resource that ensures its pods are always kept running. If the pod disappears for any reason, such as in the event of a node disappearing from the cluster or because the pod was evicted from the node, the ReplicationController notices the missing pod and creates a replacement pod.
+
+<img src=".\images\p3_replicationcontroller_createpod.jpg"/>
+
+A ReplicationController constantly monitors the list of running pods and makes sure the actual number of pods of a “type” always matches the desired number. If too few such pods are running, it creates new replicas from a pod template. If too many such pods are running, it removes the excess replicas.
+
+Replication-Controllers operate on sets of pods that match a certain label selector.
+
+<img src=".\images\p3_replicationcontroller_reconciliation_loop.jpg"/>
+
+ReplicationControllerprovides the following features:
+
+* It makes sure a pod (or multiple pod replicas) is always running by starting a new pod when an existing one goes missing.
+* When a cluster node fails, it creates replacement replicas for the pods that were under the Replication-Controller’s control and running on the failed node.
+* It enables horizontal scaling of pods—both manual and automatic.
+
+    > A pod instance is never relocated to another node. Instead, the Replication-Controller creates a completely new pod instance that has no relation to the instance it’s replacing.
+
+### Creating a ReplicationController
+
+ReplicationController is created by posting a JSON or YAML descriptor to the Kubernetes API.server.
+
+<img src=".\images\p3_replicationcontroller_yaml_example.jpg"/>
+
+> Don’t specify a pod selector when defining a ReplicationController. Let Kubernetes extract it from the pod template. This will keep your YAML shorter and simpler.
+
+### Responding Pod/Node Failures
+
+The controller responds to the deletion of a pod by creating a new replacement pod. Technically, it isn’t responding to the deletion itself, but the resulting state—the inadequate number of pods.
+
+In the non-Kubernetes world, If a node fails, the ops team would need to migrate the applications running on that node to other machines manually. Kubernetes, on the other hand, does that automatically. Soon after the ReplicationController detects that its pods are down, it will spin up new pods to replace them.
+
+### Moving pods in and out of the scope of a ReplicationController
+
+ReplicationController manages pods that match its label selector. By changing a pod’s labels, it can be removed from or added to the scope of a ReplicationController. It can even be moved from one ReplicationController to another.
+
+You need to either remove matching label(s) or change its value to move the pod out of the ReplicationController’s scope. Adding another label will have no effect, because the ReplicationController doesn’t care if the pod has any additional labels. It only cares whether the pod has all the labels referenced in the label selector.
+
+<img src=".\images\p3_replicationcontroller_change_pod_label.jpg"/>
+
+> Removing a pod from the scope of the ReplicationController comes in handy when you want to perform actions on a specific pod. For example, you might have a bug that causes your pod to start behaving badly after a specific amount of time or a specific event. If you know a pod is malfunctioning, you can take it out of the ReplicationController’s scope, let the controller replace it with a new one, and then debug or play with the pod in any way you want. Once you’re done, you delete the pod.
+
+> What happens if we change label-selector of ReplicationController? 
+> 
+> It would make all the pods fall out of the scope of the ReplicationController and create three new pods.
+
+> What happends if we change pod template?
+>
+> A ReplicationController’s pod template can be modified at any time. Changing the pod template only affect the pods created afterwards. To modify the old pods, you’d need to delete them and let the Replication-Controller replace them with new ones based on the new template.
+
+<img src=".\images\p3_replicationcontroller_change_pod_template.jpg"/>
+
+### Horizontally scaling pods
+Scaling the number of pods up or down is executed by changing the value of the replicas field in the ReplicationController resource. After the change, the Replication-Controller will either delete some existing pods (when scaling down) or create additional pods (when scaling up).
+
+* Edit yaml file and apply new configuration: kubectl apply -f replication-set.yaml
+
+* kubectl scale rc kubia --replicas=6
+
+### Deleting a ReplicationController
+
+When you delete a ReplicationController through kubectl delete, the pods are also deleted. 
+
+ pods created by a ReplicationController aren’t an integral part of the ReplicationController, and are only managed by it, you can delete only the ReplicationController and leave the pods running by using --cascade=false flag.
+
+ ## ReplicaSets
+ Initially, ReplicationControllers were the only Kubernetes component for replicating pods and rescheduling them when nodes failed. Later, a similar resource called a ReplicaSet was introduced. It’s a new generation of ReplicationController and replaces it completely (ReplicationControllers will eventually be deprecated).
+
+ A ReplicaSet behaves exactly like a ReplicationController, but it has more expressive pod selectors. Whereas a ReplicationController’s label selector only allows matching pods that include a certain label, a ReplicaSet’s selector also allows matching pods that lack a certain label or pods that include a certain label key, regardless of its value.
+> For example, a single ReplicationController can’t match pods with the label env=production and those with the label env=devel at the same time. It can only match either pods with the env=production label or pods with the env=devel label. But a single ReplicaSet can match both sets of pods and treat them as a single group.
+
+Similarly, a ReplicationController can’t match pods based merely on the presence of a label key, regardless of its value, whereas a ReplicaSet can. 
+
+> For example, a ReplicaSet can match all pods that include a label with the key env, whatever its actual value is (you can think of it as env=*).
+
+## DeamonSets
+
+Certain cases exist when you want a pod to run on each and every node in the cluster and each node needs to run exactly one instance of the pod.
+
+<img src=".\images\p3_deamonsets.jpg"/>
+
+Those cases include infrastructure-related pods that perform system-level operations. For example, you’ll want to run a log collector and a resource monitor on every node. Another good example is Kubernetes’ own kube-proxy process, which needs to run on all nodes to make services work.
+
+Pods created by a DaemonSet have a target node specified and skip the Kubernetes Scheduler. They aren’t scattered around the cluster randomly. A DaemonSet makes sure it creates as many pods as there are nodes and deploys each one on its own node.
+
+If a node goes down, the DaemonSet doesn’t cause the pod to be created elsewhere. But when a new node is added to the cluster, the DaemonSet immediately deploys a new pod instance to it. It also does the same if someone inadvertently deletes one of the pods, leaving the node without the DaemonSet’s pod.
+
+A DaemonSet deploys pods to all nodes in the cluster, unless you specify that the pods should only run on a subset of all the nodes. This is done by specifying the node-Selector property in the pod template.
+
+## Jobs
+Kubernetes includes support for creation of pods that terminates after process running inside finishes successfully and not restarted again.
+
+In the event of a node failure, the pods on that node that are managed by a Job will be rescheduled to other nodes.
+
+In the event of a failure of the process itself (when the process returns an error exit code), the Job can be configured to either restart the container or not.
+
+* Run multiple pod instances in a Job
+    * Run job pods sequentially
+    * Run job pods in parallel
+    * Scale a Job
+* Limit the time allowed for a Job pod to complete    
+
+## CronJobs
+Job resources run their pods immediately when you create the Job resource. But many batch jobs need to be run at a specific time in the future or repeatedly in the specified interval. In Linux- and UNIX-like operating systems, these jobs are better known as cron jobs. Kubernetes supports them, too.
+
+A cron job in Kubernetes is configured by creating a CronJob resource. At the configured time, Kubernetes will create a Job resource according to the Job template configured in the CronJob object. When the Job resource is created, one or more pod replicas will be created and started according to the Job’s pod template. 
 
 ## Deployment
 
