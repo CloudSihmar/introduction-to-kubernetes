@@ -41,53 +41,15 @@ The control plane is responsible for maintaining the desired state of the cluste
 
 When you install Kubernetes on a system, you're actually installing the following components, 
 
-* Control Plane Components: 
-    * API server 
-    * etcd service
-    * controllers
-        * kube-controller-manager
-        * cluster-controller-manager
-    * scheduler 
+> - [Control Plane Components](ControlPlaneComponents.md): 
+>   - API server 
+>   - etcd service
+>   - controllers
+>   - kube-controller-manager
+>   - cluster-controller-manager
+>   - scheduler 
 
-* Worker Node Components    
-    * kubelet service, 
-    * kube-proxy
-    * container runtime
-
-## Control Plane Components
-
-The Control Plane is what controls the cluster and makes it function. It consists of multiple components that can run on a single master node or be split across multiple nodes and replicated to ensure high availability. The container orchestration layer that exposes the API and interfaces to define, deploy, and manage the lifecycle of containers. 
-
-### kube-apiserver
-
-The API server is a component of the Kubernetes control plane that exposes the Kubernetes API. The API server is the front end for the Kubernetes control plane.  You and the other Control Plane components communicate with Kuberntes Cluster via API server.
-
-### kube-scheduler
-
-Schedules the applications. Assigns a worker node to each deployable component of the application. Factors taken into account for scheduling decisions include: individual and collective resource requirements, hardware/software/policy constraints, affinity and anti-affinity specifications, data locality, inter-workload interference, and deadlines.
-
-### etcd
-
-Consistent and highly-available key value data store that persistently stores the cluster configuration.
-
-### kube-controller-manager
-Performs cluster-level functions, such as replicating components, keeping track of worker nodes, handling node failures, and so on
-
-### cloud-controller-manager
-A Kubernetes control plane component that embeds cloud-specific control logic. The cloud controller manager lets you link your cluster into your cloud provider's API, and separates out the components that interact with that cloud platform from components that only interact with your cluster.
-
-## Node Components
-
-### kubelet
-
-An agent that runs on each node in the cluster. It talks to the API server and manages containers on its node. 
-
-### k-proxy
-
-kube-proxy is a network proxy that runs on each node in the cluster. It maintains network rules on nodes. These network rules allow network communication to your Pods from network sessions inside or outside of your cluster.
-
-### container run time
-
-The container runtime is the software that is responsible for running containers.
-
-Kubernetes supports several container runtimes: Docker, containerd, CRI-O, and any implementation of the Kubernetes CRI (Container Runtime Interface).
+> - [Node Components](NodeComponents.md)    
+>   - kubelet service, 
+>   - kube-proxy
+>   - container runtime
