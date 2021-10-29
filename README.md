@@ -14,14 +14,13 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 **LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial purposes. If you find this document useful in any means please support the original authors for ethical reasons.** 
 
-
 **Content**
 
 > - [Understanding Kubernetes](UnderstandingKubernetes.md)
 > - [Kubernetes Components](KubernetesComponents.md)
 >   - [Control Plane Components](ControlPlaneComponents.md)
 >   - [Node Components](NodeComponents.md)
-> - [Kubernetes Objects](KubernetesObjects.md)
+> - [Kubernetes API Objects](KubernetesAPIObjects.md)
 >   - [Namespace](Namespaces.md)
 >   - [Pod](Pod.md)
 >   - [ReplicationController](ReplicationController.md)

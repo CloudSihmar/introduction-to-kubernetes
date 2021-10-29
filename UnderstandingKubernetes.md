@@ -10,10 +10,11 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 > - Kubernetes in Action - Marko Lukša 
 > - Kubernetes Documentation - https://kubernetes.io/docs/home/
+> - Kubernetes Fundamentals (LFS258) - The Linux Foundation
 
 **LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial purposes. If you find this document useful in any means please support the original authors for ethical reasons.** 
 
-[Return README page.](README.md)
+[Return to the README page.](README.md)
 
 # Understanding Kubernetes
 
@@ -21,17 +22,45 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 Kubernetes is a portable, extensible, open-source platform for managing containerized workloads and services, that facilitates both declarative configuration and automation. It has a large, rapidly growing ecosystem. Kubernetes services, support, and tools are widely available.
 
-The name Kubernetes originates from Greek, meaning helmsman or pilot. K8s as an abbreviation results from counting the eight letters between the "K" and the "s". 
+Running a container on a laptop is relatively simple. But, connecting containers across multiple hosts, scaling them, deploying applications without downtime, and service discovery among several aspects, can be difficult.
+
+Kubernetes addresses those challenges from the start with a set of primitives and a powerful open and extensible API. The ability to add new objects and controllers allows easy customization for various production needs.
+
+According to the kubernetes.io website, Kubernetes is:
+
+    "an open-source system for automating deployment, scaling, and management of containerized applications"
+
+A key aspect of **Kubernetes** is that it builds on 15 years of experience at **Google** in a project called **borg**.
+
+Google's infrastructure started reaching high scale before virtual machines became pervasive in the datacenter, and containers provided a fine-grained solution for packing clusters efficiently. Efficiency in using clusters and managing distributed applications has been at the core of Google challenges. 
+
+The name Kubernetes originates from Greek, meaning helmsman or pilot. Keeping with the maritime theme of Docker containers, Kubernetes is the pilot of a ship of containers. Due to the difficulty in pronouncing the name, many will use a nickname, K8s, as Kubernetes has eight letters between K and S. K8s as an abbreviation results from counting the eight letters between the "K" and the "s". 
 
 ## History of Kubernetes
 
 Kubernetes was founded by Joe Beda, Brendan Burns, and Craig McLuckie, who were quickly joined by other Google engineers including Brian Grant and Tim Hockin, and was first announced by Google in mid-2014. 
 
-Its development and design are heavily influenced by Google's Borg system and many of the top contributors to the project previously worked on Borg. 
+The original codename for Kubernetes within Google was Project 7, a reference to the Star Trek ex-Borg character Seven of Nine. The seven spokes on the wheel of the Kubernetes logo are a reference to that codename. 
 
-The original codename for Kubernetes within Google was Project 7, a reference to the Star Trek ex-Borg character Seven of Nine.The seven spokes on the wheel of the Kubernetes logo are a reference to that codename. 
+What primarily distinguishes Kubernetes from other systems is its heritage. Kubernetes is inspired by Borg - the internal system used by Google to manage its applications (e.g. Gmail, Apps, GCE). Its development and design are heavily influenced by Google's Borg system and many of the top contributors to the project previously worked on Borg. 
+
+With Google pouring the valuable lessons they learned from writing and operating Borg for over 15 years into Kubernetes, this makes Kubernetes a safe choice when having to decide on what system to use to manage containers. While a powerful tool, part of the current growth in Kubernetes is making it easier to work with and handle workloads not found in a Google data center. 
 
 The original Borg project was written entirely in C++, but the rewritten Kubernetes system is implemented in Go.
+
+<img src=".\images\kuberneteslineage.jpg"/>
+
+To learn more about the ideas behind Kubernetes, you can read the "Large-Scale Cluster Management at Google with Borg" paper.
+
+    Large-scale cluster management at Google with Borg
+
+    Abhishek Verma, Luis Pedrosa, Madhukar R. Korupolu, David Oppenheimer, Eric Tune, John Wilkes 
+
+    Proceedings of the European Conference on Computer Systems (EuroSys), ACM, Bordeaux, France (2015)
+
+    https://ai.google/research/pubs/pub43438
+
+Borg has inspired current data center systems, as well as the underlying technologies used in container runtime today. Google contributed cgroups to the Linux kernel in 2007; it limits the resources used by collection of processes. Both cgroups and Linux namespaces are at the heart of containers today, including Docker.
 
 |||
 |-|-|
@@ -52,11 +81,23 @@ However, Kubernetes has it’s place in ‘increasingly serverless’ world. Kub
 
 Kubernetes will be everywhere in coming years and more exciting technologies like mesh networks, multi-region Clusters, multi-cloud Clusters, serverless reimagined will be built on top of it.
 
+## Components of Kubernetes
+
+Deploying containers and using Kubernetes may require a change in the development and the system administration approach to deploying applications. In a traditional environment, an application (such as a web server) would be a monolithic application placed on a dedicated server. As the web traffic increases, the application would be tuned, and perhaps moved to bigger and bigger hardware. After a couple of years, a lot of customization may have been done in order to meet the current web traffic needs.
+
+Instead of using a large server, Kubernetes approaches the same issue by deploying a large number of small servers, or microservices. The server and client sides of the application are written to expect that there are many possible agents available to respond to a request. It is also important that clients expect the server processes to die and be replaced, leading to a transient server deployment. Instead of a large Apache web server with many httpd daemons responding to page requests, there would be many nginx servers, each responding.
+
+The transient nature of smaller services also allows for decoupling. Each aspect of the traditional application is replaced with a dedicated, but transient, microservice or agent. To join these agents, or their replacements together, we use services. A service ties traffic from one agent to another (for example, a frontend web server to a backend database) and handles new IP or other information, should either one die and be replaced.
+
+Communication is entirely API call-driven, which allows for flexibility. Cluster configuration information is stored in a JSON format inside of etcd, but is most often written in YAML by the community. Kubernetes agents convert the YAML to JSON prior to persistence to the database. 
+
+Kubernetes is written in Go Language, a portable language which is like a hybridization between C++, Python, and Java. Some claim it incorporates the best (while some claim the worst) parts of each.
+
 ## Why do we need Kubernetes and what it can do? 
 
 Development and deployment of applications has changed in recent years. This change is both a consequence of splitting big monolithic apps into smaller microservices and of the changes in the infrastructure that runs those apps.
 
-<b>Moving from monolithic apps to microservices</b>
+### Moving from monolithic apps to microservices
 
 The problems in monolithic applications have forced the community to start splitting complex monolithic applications into smaller independently deployable components called <b>microservices</b>. Each microservice runs as an independent process and communicates with other microservices through simple, well-defined interfaces (APIs).
 
@@ -104,6 +145,21 @@ Kubernetes enables you to run your software applications on thousands of compute
 Deploying applications through Kubernetes is always the same, whether your cluster contains only a couple of nodes or thousands of them. The size of the cluster makes no difference at all. Additional cluster nodes simply represent an additional amount of resources available to deployed apps.
 
 Kubernetes will run your containerized app somewhere in the cluster, provide information to its components on how to find each other, and keep all of them running. Because your application doesn’t care which node it’s running on, Kubernetes can relocate the app at any time, and by mixing and matching apps, achieve far better resource utilization than is possible with manual scheduling.
+
+## Challenges
+
+Containers provide a great way to package, ship, and run applications - that is the Docker motto. 
+
+The developer experience has been boosted tremendously thanks to containers. Containers, and Docker specifically, have empowered developers with ease of building container images, simplicity of sharing images via Docker registries, and providing a powerful user experience to manage containers.
+
+However, managing containers at scale and designing a distributed application based on microservices' principles may be challenging.
+A smart first step is deciding on a continuous integration/continuous delivery (CI/CD) pipeline to build, test and verify container images. Tools such as Spinnaker, Jenkins and Helm can be helpful to use, among other possible tools. This will help with the challenges of a dynamic environment.
+
+Then, you need a cluster of machines acting as your base infrastructure on which to run your containers. You also need a system to launch your containers, and watch over them when things fail and replace as required. Rolling updates and easy rollbacks of containers is an important feature, and eventually tear down the resource when no longer needed.
+
+All of these actions require flexible, scalable, and easy-to-use network and storage.​ As containers are launched on any worker node, the network must join the resource to other containers, while still keeping the traffic secure from others. We also need a storage structure which provides and keeps or recycles storage in a seamless manner.
+
+When Kubernetes answers these concerns, one of the biggest challenges to adoption is the applications themselves, running inside the container. They need to be written, or re-written, to be truly transient. A good question to ponder: If you were to deploy Chaos Monkey, which could terminate any containers at any time, would your customers notice?
 
 ## What Kubernetes is not
 

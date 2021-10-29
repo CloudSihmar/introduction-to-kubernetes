@@ -15,7 +15,7 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 [Return README page.](README.md)
 
-# Kubernetes Objects
+# Kubernetes API Objects
 
 Kubernetes objects are persistent entities in the Kubernetes system. Kubernetes uses these entities to represent the state of your cluster. 
 
