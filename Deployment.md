@@ -1,4 +1,5 @@
 ## Deployment
+
 The basic outline of an application running on Kubernetes is as follows.
 
 <img src=".\images\p3_deployments_general_architecture.jpg"/>

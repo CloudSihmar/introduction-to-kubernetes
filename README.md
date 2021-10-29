@@ -33,3 +33,6 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 >   - [Services](Services.md)
 >   - [Deployment](Deployment.md)
 >   - [StatefulSet](StatefulSet.md)
+> - [Managing State with Deployments](ManagingStateWithDeployments.md)
+> - [Volumes And Data](VolumesAndData.md)
+> - [Services](Services.md)
