@@ -165,14 +165,3 @@ spec:
     image: busybox
     command: ['sh', '-c', 'until ls /db/dir ; do sleep 5; done; '] 
 ```
-
-### Component Review
-
-Now that we have seen some of the components, let's take another look with some of the connections shown. Not all connections are shown in the diagram below. Note that all of the components are communicating with kube-apiserver. Only kube-apiserver communicates with the etcd database.
-
-<img src=".\images\k8s_architectural_review.png"/>
-
-We also see some commands, which we may need to install separately to work with various components. There is an etcdctl command to interrogate the database and calicoctl to view more of how the network is configured. We can see Felix, which is the primary Calico agent on each machine. This agent, or daemon, is responsible for interface monitoring and management, route programming, ACL configuration and state reporting.
-
-BIRD is a dynamic IP routing daemon used by Felix to read routing state and distribute that information to other nodes in the cluster. This allows a client to connect to any node, and eventually be connected to the workload on a container, even if not the node originally contacted.
-
