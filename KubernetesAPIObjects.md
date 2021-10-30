@@ -138,7 +138,6 @@ As we've already mentioned, it is the lowest unit we can manage; it runs the app
 >   - [DeamonSet](DeamonSets.md)
 >   - [Job and CronJob](JobAndCronJob.md)
 >   - [ConfigMap and Secret](ConfigMapsAndSecrets.md)
->   - [Services](Services.md)
 >   - [Deployment](Deployment.md)
 >   - [StatefulSet](StatefulSet.md)
 >   - [Autoscaling](Autoscaling.md)

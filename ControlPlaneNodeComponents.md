@@ -59,6 +59,7 @@ There is a Leader database along with possible followers, or non-voting Learners
 While most Kubernetes objects are designed to be decoupled, a transient microservice which can be terminated without much concern etcd is the exception. As it is, the persistent state of the entire cluster must be protected and secured. Before upgrades or maintenance, you should plan on backing up etcd. The etcdctl command allows for snapshot save and snapshot restore.
 
 ### kube-controller-manager
+
 Performs cluster-level functions, such as replicating components, keeping track of worker nodes, handling node failures, and so on.
 
 The kube-controller-manager is a core control loop daemon which interacts with the kube-apiserver to determine the state of the cluster. If the state does not match, the manager will contact the necessary controller to match the desired state. There are several operators in use, such as endpoints, namespace, and replication. The full list has expanded as Kubernetes has matured. 
