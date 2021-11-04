@@ -12,6 +12,16 @@ Namespaces, a Linux kernel feature that segregates system resources, are intende
 
 Kubernetes starts with four initial namespaces:
 
+```shell
+kubectl get namespace
+
+NAME              STATUS   AGE
+default           Active   1d
+kube-node-lease   Active   1d
+kube-public       Active   1d
+kube-system       Active   1d
+```
+
 * <i>default</i>:  The default namespace for objects with no other namespace. This is where all the resources are assumed, unless set otherwise.
 
 * <i>kube-system</i>: The namespace for objects created by the Kubernetes system. This namespace contains infrastructure pods.
@@ -26,12 +36,18 @@ Should you want to see all the resources on a system, you must pass the --all-na
 
 A namespace is a Kubernetes resource like any other, so namespaces can be created by posting a YAML file to the Kubernetes API server.
 
-<img src=".\images\p3_create_ns_yaml_example.jpg"/>
-
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: custom-namespace
+```
 ### Discovering namespaces
 
-    >- kubectl get ns
-    >- kubectl get po --ns kube-system
+```shell
+kubectl get ns
+kubectl get po --ns kube-system
+```
 
 ### Working with Namespaces
 

@@ -51,7 +51,20 @@ The pod definition consists following main parts:
 
     The status part contains read-only runtime data that shows the state of the resource at a given moment. When creating a new pod, you never need to provide the status part.
 
-<img src=".\images\p3_pod_example_yaml.jpg"/>
+The following is an example of a Pod which consists of a container running the image nginx:1.14.2.
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.14.2
+    ports:
+    - containerPort: 80
+```
 
 ### Organizing Pods with Labels
 With microservices architectures, the number of deployed microservices can easily reach high values. Those components will probably be replicated (multiple copies of the same component will be deployed) and multiple versions or releases (stable, beta, canary, and so on) will run concurrently. This can lead to hundreds of pods in the system. Without a mechanism for organizing them, you end up with a big, incomprehensible mess.
@@ -70,14 +83,28 @@ Labels and label selectors can be used to constrain pod scheduling. As an exampl
 
 Now imagine you want to deploy a new pod that needs a GPU to perform its work. To ask the scheduler to only choose among the nodes that provide a GPU, you’ll add a node selector to the pod’s YAML.
 
-<img src=".\images\p3_nodeselector_example_yaml.jpg"/>
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubia-gpu
+spec:
+  nodeSelector:
+    gpu: "true"
+  containers:
+  - name: kubia
+    image: luksa/kubia
+```
+nodeSelector tells Kubernetes to deploy this pod only to nodes containing the gpu=true label. 
 
 ### Removing Pods
 
-Delete pod by name: <i>kubectl delete po pod-name</i>
+```shell
+kubectl delete po pod-name
 
-Deleting pods using label selectors: <i>kubectl delete po -l label=value</i>
+kubectl delete po -l label=value
 
-Deleting all pods in a namespace :<i>kubectl delete po --all</i>
+kubectl delete po --all
 
-Deleting pods by deleting the whole namespace: <i>kubectl delete ns custom_namespace</i>
+kubectl delete ns custom_namespace
+```

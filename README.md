@@ -18,8 +18,8 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 > - [Understanding Kubernetes](UnderstandingKubernetes.md)
 > - [Kubernetes Components](KubernetesComponents.md)
->   - [Control Plane Node Components](ControlPlaneComponents.md)
->   - [Worker Node Components](NodeComponents.md)
+>   - [Control Plane Node Components](ControlPlaneNodeComponents.md)
+>   - [Worker Node Components](WorkerNodeComponents.md)
 > - [Kubernetes Networking](KubernetesNetworking.md)
 > - [Kubernetes APIs and Access](KubernetesAPIsAndAccess.md)
 > - [Kubernetes API Objects](KubernetesAPIObjects.md)
