@@ -23,6 +23,7 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 > - [Kubernetes Networking](KubernetesNetworking.md)
 > - [Kubernetes APIs and Access](KubernetesAPIsAndAccess.md)
 > - [Kubernetes API Objects](KubernetesAPIObjects.md)
+>   - [Node](Node.md)
 >   - [Namespace](Namespaces.md)
 >   - [Pod](Pod.md)
 >   - [ReplicationController](ReplicationController.md)
