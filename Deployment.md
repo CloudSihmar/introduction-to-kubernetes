@@ -31,9 +31,42 @@ When you create a Deployment, a ReplicaSet resource is created underneath. Repli
 
 A Deployment is composed of a label selector, a desired replica count, a pod template and a deployment strategy that defines how an update should be performed when the Deployment resource is modified.
 
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+```
+
+
+```shell
+kubectl apply -f nginx-deployment.yaml
+```
 ### Updating a Deployment
 
 The only thing you need to do is modify the pod template defined in the Deployment resource and Kubernetes will take all the steps necessary to get the actual system state to what’s defined in the resource. Similar to scaling a ReplicationController or ReplicaSet up or down, all you need to do is reference a new image tag in the Deployment’s pod template and leave it to Kubernetes to transform your system so it matches the new desired state.
+
+```shell
+kubectl set image deployment/nginx-deployment nginx=nginx:1.16.1
+```
+
 
 <b>Deployment Strategies</b>
 
@@ -53,13 +86,15 @@ Deployment also ensures that only a certain number of Pods are created above the
 ### Scaling a Deployment
 
 You can scale a Deployment by changing replica count. 
-
-    kubectl scale deployment.v1.apps/nginx-deployment --replicas=10
+```shell
+kubectl scale deployment.v1.apps/nginx-deployment --replicas=10
+```
 
 You can setup an autoscaler for your Deployment and choose the minimum and maximum number of Pods you want to run based on the CPU utilization of your existing Pods.
 
-    kubectl autoscale deployment.v1.apps/nginx-deployment --min=10 --max=15 --cpu-percent=80
-
+```shell
+kubectl autoscale deployment.v1.apps/nginx-deployment --min=10 --max=15 --cpu-percent=80
+```
 
 ### Deployment status
 

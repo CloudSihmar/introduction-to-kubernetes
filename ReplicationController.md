@@ -24,7 +24,32 @@ ReplicationController provides the following features:
 
 ReplicationController is created by posting a JSON or YAML descriptor to the Kubernetes API server.
 
-<img src=".\images\p3_replicationcontroller_yaml_example.jpg"/>
+This example ReplicationController config runs three copies of the nginx web server.
+
+```yaml
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: nginx
+spec:
+  replicas: 3
+  selector:
+    app: nginx
+  template:
+    metadata:
+      name: nginx
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+```
+```shell
+kubectl apply -f replication.yaml
+```
 
 > Don’t specify a pod selector when defining a ReplicationController. Let Kubernetes extract it from the pod template. This will keep your YAML shorter and simpler.
 
