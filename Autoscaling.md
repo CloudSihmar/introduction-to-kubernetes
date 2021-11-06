@@ -1,3 +1,23 @@
+# Introduction to Kubernetes
+
+Editors: **Kaan Keskin, Sezen Erdem**
+
+Date: November 2021
+
+Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
+
+**Resources:**
+
+> - Kubernetes Documentation - https://kubernetes.io/docs/home/
+> - Kubernetes in Action - Marko Lukša 
+> - Kubernetes Fundamentals (LFS258) - The Linux Foundation
+> - Kubernetes for Developers (LFD259) - The Linux Foundation
+> - Getting Started with Kubernetes - Sander van Vugt - Addison-Wesley Professional
+
+**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial purposes. If you find this document useful in any means please support the original authors for ethical reasons.** 
+
+[Return to the README page.](README.md)
+
 ## Autoscaling
 
 In the autoscaling group we find the Horizontal Pod Autoscalers (HPA). This is a stable resource. HPAs automatically scale Replication Controllers, ReplicaSets, or Deployments based on a target of 50% CPU usage by default. The usage is checked by the kubelet every 30 seconds, and retrieved by the Metrics Server API call every minute. HPA checks with the Metrics Server every 30 seconds. Should a Pod be added or removed, HPA waits 180 seconds before further action. 

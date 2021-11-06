@@ -1,3 +1,23 @@
+# Introduction to Kubernetes
+
+Editors: **Kaan Keskin, Sezen Erdem**
+
+Date: November 2021
+
+Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
+
+**Resources:**
+
+> - Kubernetes Documentation - https://kubernetes.io/docs/home/
+> - Kubernetes in Action - Marko Lukša 
+> - Kubernetes Fundamentals (LFS258) - The Linux Foundation
+> - Kubernetes for Developers (LFD259) - The Linux Foundation
+> - Getting Started with Kubernetes - Sander van Vugt - Addison-Wesley Professional
+
+**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial purposes. If you find this document useful in any means please support the original authors for ethical reasons.** 
+
+[Return to the README page.](README.md)
+
 ## StatefulSet
 
 According to Kubernetes documentation, a StatefulSet is the workload API object used to manage stateful applications. Pods deployed using a StatefulSet use the same Pod specification. How this is different than a Deployment is that a StatefulSet considers each Pod as unique and provides ordering to Pod deployment. 
@@ -25,6 +45,7 @@ StatefulSets currently have some limitations
 * When using Rolling Updates with the default Pod Management Policy (OrderedReady), it's possible to get into a broken state that requires manual intervention to repair.
 
 ### Example
+
 The example below demonstrates the components of a StatefulSet:
 
 ```yaml
@@ -77,6 +98,7 @@ spec:
         requests:
           storage: 1Gi
 ```
+
 In the above example:
 
 * A Headless Service, named nginx, is used to control the network domain.

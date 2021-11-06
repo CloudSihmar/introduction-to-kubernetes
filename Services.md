@@ -1,4 +1,25 @@
+# Introduction to Kubernetes
+
+Editors: **Kaan Keskin, Sezen Erdem**
+
+Date: November 2021
+
+Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
+
+**Resources:**
+
+> - Kubernetes Documentation - https://kubernetes.io/docs/home/
+> - Kubernetes in Action - Marko Lukša 
+> - Kubernetes Fundamentals (LFS258) - The Linux Foundation
+> - Kubernetes for Developers (LFD259) - The Linux Foundation
+> - Getting Started with Kubernetes - Sander van Vugt - Addison-Wesley Professional
+
+**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial purposes. If you find this document useful in any means please support the original authors for ethical reasons.** 
+
+[Return to the README page.](README.md)
+
 ## Services
+
 Pods need a way of finding other pods if they want to consume the services they provide. Configuring each client application by specifying the exact IP address or hostname of the server providing the service in the client’s configuration files will not work in Kubernetes because:
 
 * Pods are ephemeral—They may come and go at any time
@@ -20,6 +41,7 @@ Label selectors determine which pods belong to the Service.
 <img src=".\images\p3_service_labelselector.jpg"/>
 
 ### Creating Services
+
 Service is created by posting a JSON or YAML descriptor to the Kubernetes API server.
 
 <img src=".\images\p3_service_yamlexample.jpg"/>
@@ -97,6 +119,7 @@ You can map multiple paths on the same host to different services.
 You can use an Ingress to map to different services based on the host in the HTTP request instead of (only) the path
 
 ### Pod Readiness Probe
+
 Pods are included as endpoints of a service if their labels match the service’s pod selector. As soon as a new pod with proper labels is created, it becomes part of the service and requests start to be redirected to the pod. But what if the pod isn’t ready to start serving requests immediately?
 
 The pod may need time to load either configuration or data, or it may need to perform a warm-up procedure to prevent the first user request from taking too long and affecting the user experience. In such cases you don’t want the pod to start receiving requests immediately, especially when the already-running instances can process requests properly and quickly. It makes sense to not forward requests to a pod that’s in the process of starting up until it’s fully ready.

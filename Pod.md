@@ -1,4 +1,32 @@
+# Introduction to Kubernetes
+
+Editors: **Kaan Keskin, Sezen Erdem**
+
+Date: November 2021
+
+Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
+
+**Resources:**
+
+> - Kubernetes Documentation - https://kubernetes.io/docs/home/
+> - Kubernetes in Action - Marko Lukša 
+> - Kubernetes Fundamentals (LFS258) - The Linux Foundation
+> - Kubernetes for Developers (LFD259) - The Linux Foundation
+> - Getting Started with Kubernetes - Sander van Vugt - Addison-Wesley Professional
+
+**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial purposes. If you find this document useful in any means please support the original authors for ethical reasons.** 
+
+[Return to the README page.](README.md)
+
 ## Pod
+
+The whole point of Kubernetes is to orchestrate the lifecycle of a container. We do not interact with particular containers. Instead, the smallest unit we can work with is a Pod. Some would say a pod of whales or peas-in-a-pod. Due to shared resources, the design of a Pod typically follows a one-process-per-container architecture.
+
+Containers in a Pod are started in parallel. As a result, there is no way to determine which container becomes available first inside a pod. The use of InitContainers can order startup, to some extent. To support a single process running in a container, you may need logging, a proxy, or special adapter. These tasks are often handled by other containers in the same pod.
+
+There is only one IP address per Pod, for almost every network plugin. If there is more than one container in a pod, they must share the IP. To communicate with each other, they can either use IPC, the loopback interface, or a shared filesystem.
+
+While Pods are often deployed with one application container in each, a common reason to have multiple containers in a Pod is for logging. You may find the term sidecar for a container dedicated to performing a helper task, like handling logs and responding to requests, as the primary application container may not have this ability. The term sidecar, like ambassador and adapter, does not have a special setting, but refers to the concept of what secondary pods are included to do.
 
 Pods are the smallest deployable units of computing that you can create and manage in Kubernetes.
 
@@ -40,6 +68,7 @@ A container shouldn’t run multiple processes. A pod shouldn’t contain multip
 Usually you don't need to create Pods directly, even singleton Pods. Instead, create them using workload resources such as Deployment or Job.
 
 ### Creating Pods
+
 Pods are usually created by posting a JSON or YAML manifest to the Kubernetes REST API endpoint. 
 
 The pod definition consists following main parts:
@@ -66,7 +95,47 @@ spec:
     - containerPort: 80
 ```
 
+### Containers
+
+While Kubernetes orchestration does not allow direct manipulation on a container level, we can manage the resources containers are allowed to consume. 
+
+In the resources section of the PodSpec you can pass parameters which will be passed to the container runtime on the scheduled node: 
+
+```yaml
+resources: 
+  limits: 
+    cpu: "1" 
+    memory: "4Gi" 
+  requests: 
+    cpu: "0.5" 
+    memory: "500Mi"
+```
+
+Another way to manage resource usage of the containers is by creating a ResourceQuota object, which allows hard and soft limits to be set in a namespace. The quotas allow management of more resources than just CPU and memory and allows limiting several objects. 
+
+A beta feature in v1.12 uses the scopeSelector field in the quota spec to run a pod at a specific priority if it has the appropriate priorityClassName in its pod spec.
+
+### Init Containers
+
+Not all containers are the same. Standard containers are sent to the container engine at the same time, and may start in any order. LivenessProbes, ReadinessProbes, and StatefulSets can be used to determine the order, but can add complexity. Another option can be an Init container, which must complete before app containers will be started. Should the init container fail, it will be restarted until completion, without the app container running. 
+
+The init container can have a different view of the storage and security settings, which allows utilities and commands to be used, which the application would not be allowed to use.. Init containers can contain code or utilities that are not in an app. It also has an independent security from app containers.
+
+The code below will run the init container until the ls command succeeds; then the database container will start.
+
+```yaml
+spec: 
+  containers: 
+  - name: main-app 
+    image: databaseD 
+  initContainers:
+  - name: wait-database
+    image: busybox
+    command: ['sh', '-c', 'until ls /db/dir ; do sleep 5; done; '] 
+```
+
 ### Organizing Pods with Labels
+
 With microservices architectures, the number of deployed microservices can easily reach high values. Those components will probably be replicated (multiple copies of the same component will be deployed) and multiple versions or releases (stable, beta, canary, and so on) will run concurrently. This can lead to hundreds of pods in the system. Without a mechanism for organizing them, you end up with a big, incomprehensible mess.
 
 <img src=".\images\p3_uncategorized_pods_example.jpg"/>

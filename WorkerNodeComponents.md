@@ -36,6 +36,8 @@ Cluster-wide metrics is another area with limited functionality. The metrics-ser
 
 ### kubelet
 
+The Kubelet is the component responsible for everything running on a worker node. Its initial job is to register the node it’s running on by creating a Node resource in the API server. Then it needs to continuously monitor the API server for Pods that have been scheduled to the node, and start the pod’s containers. It does this by telling the configured container runtime (which is Docker, CoreOS’ rkt, or something else) to run a container from a specific container image. The Kubelet then constantly monitors running containers and reports their status, events, and resource consumption to the API server.
+
 An agent that runs on each node in the cluster. It talks to the API server and manages containers on its node.
 
 The kubelet systemd process is the heavy lifter for changes and configuration on worker nodes. It accepts the API calls for Pod specifications (a PodSpec is a JSON or YAML file that describes a pod). It will work to configure the local node until the specification has been met.

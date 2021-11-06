@@ -1,3 +1,23 @@
+# Introduction to Kubernetes
+
+Editors: **Kaan Keskin, Sezen Erdem**
+
+Date: November 2021
+
+Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
+
+**Resources:**
+
+> - Kubernetes Documentation - https://kubernetes.io/docs/home/
+> - Kubernetes in Action - Marko Lukša 
+> - Kubernetes Fundamentals (LFS258) - The Linux Foundation
+> - Kubernetes for Developers (LFD259) - The Linux Foundation
+> - Getting Started with Kubernetes - Sander van Vugt - Addison-Wesley Professional
+
+**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial purposes. If you find this document useful in any means please support the original authors for ethical reasons.** 
+
+[Return to the README page.](README.md)
+
 ## Namespace
 
 A single cluster should be able to satisfy the needs of multiple users or groups of users. Kubernetes namespaces help different projects, teams, or customers to share a Kubernetes cluster. Kubernetes namespaces also provide a scope for objects names. Using multiple namespaces allows you to split complex systems with numerous components into smaller distinct groups. Resource names only need to be unique within a namespace. Two different namespaces can contain resources of the same name. 

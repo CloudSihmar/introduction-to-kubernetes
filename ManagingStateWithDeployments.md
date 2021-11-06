@@ -40,6 +40,33 @@ $ kubectl create deployment dev-web --image=nginx:1.13.7-alpine
 deployment "dev-web" created
 ```
 
+The basic outline of an application running on Kubernetes is as follows.
+
+<img src=".\images\p3_deployments_general_architecture.jpg"/>
+
+The pods are backed by a ReplicationController or a ReplicaSet. A Service exists through which apps running in other pods or external clients access the pods. 
+
+Initially, the pods run the first version of your application—let’s suppose its image is tagged as v1. You then develop a newer version of the app and push it to an image repository as a new image, tagged as v2. You’d next like to replace all the pods with this new version. 
+
+You have two ways of updating all those pods:
+
+* If you have a ReplicationController managing a set of v1 pods,  replace them by modifying the pod template so it refers to version v2 of the image. Then delete the old pod instances. The ReplicationController will notice that no pods match its label selector and it will spin up new instances.  
+
+<img src=".\images\p3_deployments_update_pods_v1.jpg"/>
+
+* Blue-Green Deployment: Start new pods and once they’re up, delete the old ones. 
+
+    You can do this either by adding all the new pods and then deleting all the old ones at once, or sequentially, by adding new pods and removing old ones gradually.
+
+
+<img src=".\images\p3_deployments_blue_green_update_v1.jpg"/>
+
+<img src=".\images\p3_deployments_rolling_update.jpg"/>
+
+A Deployment is a higher-level resource meant for deploying applications and updating them declaratively, instead of doing it through a ReplicationController or a ReplicaSet, which are both considered lower-level concepts.
+
+When you create a Deployment, a ReplicaSet resource is created underneath. Replica-Sets replicate and manage pods. When using a Deployment, the actual pods are created and managed by the Deployment’s ReplicaSets, not by the Deployment directly.
+
 ## Object Relationship
 
 Here you can see the relationship between objects from the container, which Kubernetes does not directly manage, up to the deployment.
@@ -54,6 +81,38 @@ A multi-container pod is shown next. While there are several names used, such as
 On the lower left we see a replicaSet. This controller will ensure you have a certain number of pods running. The pods are all deployed with the same podSpec, which is why they are called replicas. Should a pod terminate or a new pod be found, the replicaSet will create or terminate pods until the current number of running pods matches the specifications. Any of the current pods could be terminated should the spec demand fewer pods running. 
 
 The graphic in the lower right shows a deployment. This controller allows us to manage the versions of images deployed in the pods. Should an edit be made to the deployment, a new replicaSet is created, which will deploy pods using the new podSpec. The deployment will then direct the old replicaSet to shut down pods as the new replicaSet pods become available. Once the old pods are all terminated, the deployment terminates the old replicaSet and the deployment returns to having only one replicaSet running.
+
+## Creating a Deployment
+
+A Deployment is composed of a label selector, a desired replica count, a pod template and a deployment strategy that defines how an update should be performed when the Deployment resource is modified.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+```
+
+```shell
+kubectl apply -f nginx-deployment.yaml
+```
 
 ## Deployment Details
 
@@ -279,7 +338,28 @@ $ kubectl edit deployment nginx
 
 This would trigger a rolling update of the deployment. While the deployment would show an older age, a review of the Pods would show a recent update and older version of the web server application deployed.
 
+### Updating a Deployment
+
+The only thing you need to do is modify the pod template defined in the Deployment resource and Kubernetes will take all the steps necessary to get the actual system state to what’s defined in the resource. Similar to scaling a ReplicationController or ReplicaSet up or down, all you need to do is reference a new image tag in the Deployment’s pod template and leave it to Kubernetes to transform your system so it matches the new desired state.
+
+```shell
+kubectl set image deployment/nginx-deployment nginx=nginx:1.16.1
+```
+
+<b>Deployment Strategies</b>
+
+* RollingUpdate: Default strategy. The RollingUpdate strategy removes old pods one by one, while adding new ones at the same time, keeping the application available throughout the whole process, and ensuring there’s no drop in its capacity to handle requests
+* Recreate: The Recreate strategy causes all old pods to be deleted before the new ones are created. Use this strategy when your application doesn’t support running multiple versions in parallel and requires the old version to be stopped completely before the new one is started. This strategy does involve a short period of time when your app becomes completely unavailable.
+
 ## Deployment Rollbacks
+
+Deployments make it easy to roll back to the previously deployed version by telling Kubernetes to undo the last rollout of a Deployment. You can roll back to a specific revision by specifying the revision in the undo command.
+
+Deployment ensures that only a certain number of Pods are down while they are being updated. By default, it ensures that at least 75% of the desired number of Pods are up (25% max unavailable).
+
+Deployment also ensures that only a certain number of Pods are created above the desired number of Pods. By default, it ensures that at most 125% of the desired number of Pods are up (25% max surge).
+
+<img src=".\images\p3_deployments_maxsurge_maxunavailable.jpg"/>
 
 With some of the previous ReplicaSets of a Deployment being kept, you can also roll back to a previous revision by scaling up and down. The number of previous configurations kept is configurable, and has changed from version to version. Next, we will have a closer look at rollbacks, using the --record option of the kubectl create command, which allows annotation in the resource definition.
 
@@ -326,15 +406,48 @@ $ kubectl rollout pause deployment/ghost
 
 Please note that you can still do a rolling update on ReplicationControllers with the kubectl rolling-update command, but this is done on the client side. Hence, if you close your client, the rolling update will stop.
 
-## Using DaemonSets
+## Scaling a Deployment
 
-A newer object to work with is the DaemonSet. This controller ensures that a single pod exists on each node in the cluster. Every Pod uses the same image. Should a new node be added, the DaemonSet controller will deploy a new Pod on your behalf. Should a node be removed, the controller will delete the Pod also. 
+You can scale a Deployment by changing replica count.
 
-The use of a DaemonSet allows for ensuring a particular container is always running. In a large and dynamic environment, it can be helpful to have a logging or metric generation application on every node without an administrator remembering to deploy that application. 
+```shell
+kubectl scale deployment.v1.apps/nginx-deployment --replicas=10
+```
 
-Use '**kind: DaemonSet**'.​
+You can setup an autoscaler for your Deployment and choose the minimum and maximum number of Pods you want to run based on the CPU utilization of your existing Pods.
 
-There are ways of effecting the kube-apischeduler such that some nodes will not run a DaemonSet.
+```shell
+kubectl autoscale deployment.v1.apps/nginx-deployment --min=10 --max=15 --cpu-percent=80
+```
+
+## Deployment Status
+
+A Deployment enters various states during its lifecycle.
+
+### Progressing:
+
+Kubernetes marks a Deployment as progressing when one of the following tasks is performed:
+- The Deployment creates a new ReplicaSet.
+- The Deployment is scaling up its newest ReplicaSet.
+- The Deployment is scaling down its older ReplicaSet(s).
+- New Pods become ready or available (ready for at least MinReadySeconds).
+
+### Complete: 
+
+Kubernetes marks a Deployment as complete when it has the following characteristics:
+- All of the replicas associated with the Deployment have been updated to the latest version you've specified, meaning any updates you've requested have been completed.
+- All of the replicas associated with the Deployment are available.
+- No old replicas for the Deployment are running.
+
+### Failed: 
+
+Your Deployment may get stuck trying to deploy its newest ReplicaSet without ever completing. This can occur due to some of the following factors:
+- Insufficient quota
+- Readiness probe failures
+- Image pull errors
+- Insufficient permissions
+- Limit ranges
+- Application runtime misconfiguration
 
 ## Labels
 

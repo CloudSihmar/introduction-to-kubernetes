@@ -34,6 +34,10 @@ When building a cluster using kubeadm, the kubelet process is managed by systemd
 
 ### kube-apiserver
 
+The Kubernetes API server is the central component used by all other components and by clients, such as kubectl. It provides a CRUD (Create, Read, Update, Delete) interface for querying and modifying the cluster state over a RESTful API. It stores that state in etcd.
+
+In addition to providing a consistent way of storing objects in etcd, it also performs validation of those objects, so clients can’t store improperly configured objects 
+
 The API server is a component of the Kubernetes control plane that exposes the Kubernetes API. The API server is the front end for the Kubernetes control plane. You and the other Control Plane components communicate with Kubernetes Cluster via API server.
 
 The kube-apiserver is central to the operation of the Kubernetes cluster. All calls, both internal and external traffic, are handled via this agent. All actions are accepted and validated by this agent, and it is the only connection to the etcd database. It validates and configures data for API objects, and services REST operations. As a result, it acts as a cp process for the entire cluster, and acts as a frontend of the cluster's shared state.
@@ -41,6 +45,10 @@ The kube-apiserver is central to the operation of the Kubernetes cluster. All c
 Starting as a beta feature in v1.18, the Konnectivity service provides the ability to separate user-initiated traffic from server-initiated traffic. Until these features are developed, most network plugins commingle the traffic, which has performance, capacity, and security ramifications.
 
 ### kube-scheduler
+
+Scheduler wait for newly created pods through the API server’s watch mechanism and assign a node to each new pod that doesn’t already have the node set.
+
+All the Scheduler does is update the pod definition through the API server. The API server then notifies the Kubelet (through the watch mechanism) that the pod has been scheduled. As soon as the Kubelet on the target node sees the pod has been scheduled to its node, it creates and runs the pod’s containers.
 
 Schedules the applications. Assigns a worker node to each deployable component of the application. Factors taken into account for scheduling decisions include: individual and collective resource requirements, hardware/software/policy constraints, affinity and anti-affinity specifications, data locality, inter-workload interference, and deadlines.
 
@@ -63,6 +71,23 @@ While most Kubernetes objects are designed to be decoupled, a transient microser
 Performs cluster-level functions, such as replicating components, keeping track of worker nodes, handling node failures, and so on.
 
 The kube-controller-manager is a core control loop daemon which interacts with the kube-apiserver to determine the state of the cluster. If the state does not match, the manager will contact the necessary controller to match the desired state. There are several operators in use, such as endpoints, namespace, and replication. The full list has expanded as Kubernetes has matured. 
+
+### Controllers running inside Controller Manager
+
+The single Controller Manager process currently combines a multitude of controllers performing various reconciliation tasks.
+
+The list of these controllers includes the:
+
+- Replication Manager (a controller for ReplicationController resources)
+- ReplicaSet, DaemonSet, and Job controllers
+- Deployment controller
+- StatefulSet controller
+- Node controller
+- Service controller
+- Endpoints controller
+- Namespace controller
+- PersistentVolume controller
+- Others
 
 ### cloud-controller-manager
 
