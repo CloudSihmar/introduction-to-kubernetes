@@ -16,6 +16,7 @@ StatefulSets are valuable for applications that require one or more of the follo
 * Ordered, automated rolling updates.
 
 ### Limitations
+
 StatefulSets currently have some limitations
 * The storage for a given Pod must either be provisioned by a PersistentVolume Provisioner based on the requested storage class, or pre-provisioned by an admin.
 * Deleting and/or scaling a StatefulSet down will not delete the volumes associated with the StatefulSet. This is done to ensure data safety, which is generally more valuable than an automatic purge of all related StatefulSet resources.
