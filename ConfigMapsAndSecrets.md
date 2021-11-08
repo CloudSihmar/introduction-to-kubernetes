@@ -181,7 +181,7 @@ A Secret can be used with a Pod in three ways:
 2. As container environment variable.
 3. By the kubelet when pulling images for the Pod.
 
-Pods can access local data using volumes, but there is some data you don't want readable to the naked eye. Passwords may be an example. Using the Secret API resource, the same password could be encoded or encrypted.
+Pods can access local data using volumes, but there is some data you don't want readable to the naked eye. Passwords may be an example. Someone reading through a YAML file may read a password and remember it. Using the Secret API resource, the same password could be encoded or encrypted. A casual reading would not give away the password.
 
 You can create, get, or delete secrets:
 
@@ -219,6 +219,8 @@ metadata:
 data: 
   password: TEZUckAxbgo=
 ```
+
+Prior to Kubernetes v1.18 secrets (and configMaps) were automatically updated. This could lead to issues. If a configuration was updated and a Pod restarted,​​​​​​​ it may be configured differently than other replicas. In newer versions these objects can be made immutable.
 
 ### Creating Secret
 

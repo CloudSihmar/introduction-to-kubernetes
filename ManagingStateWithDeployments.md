@@ -361,7 +361,7 @@ Deployment also ensures that only a certain number of Pods are created above the
 
 <img src=".\images\p3_deployments_maxsurge_maxunavailable.jpg"/>
 
-With some of the previous ReplicaSets of a Deployment being kept, you can also roll back to a previous revision by scaling up and down. The number of previous configurations kept is configurable, and has changed from version to version. Next, we will have a closer look at rollbacks, using the --record option of the kubectl create command, which allows annotation in the resource definition.
+With some of the previous ReplicaSets of a Deployment being kept, you can also roll back to a previous revision by scaling up and down. The number of previous configurations kept is configurable, and has changed from version to version. Next, we will have a closer look at rollbacks, using the --record option of the kubectl create command, which allows annotation in the resource definition. The create generator does not have a record function. 
 
 ```shell
 $ kubectl create deploy ghost --image=ghost --record

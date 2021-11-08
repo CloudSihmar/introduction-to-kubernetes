@@ -27,11 +27,18 @@ A volume is a directory, possibly pre-populated, made available to containers in
 The Container Storage Interface (CSI) adoption enables the goal of an industry standard interface for container orchestration to allow access to arbitrary storage systems. Currently, volume plugins are "in-tree", meaning they are compiled and built with the core Kubernetes binaries. This "out-of-tree" object will allow storage vendors to develop a single driver and allow the plugin to be containerized. This will replace the existing Flex plugin which requires elevated access to the host node, a large security concern. 
 
 Should you want your storage lifetime to be distinct from a Pod, you can use Persistent Volumes. These allow for empty or pre-populated volumes to be claimed by a Pod using a Persistent Volume Claim, then outlive the Pod. Data inside the volume could then be used by another Pod, or as a means of retrieving data. 
+
 There are two API objects which exist to provide data to a Pod already. Encoded data can be passed using a Secret and non-encoded data can be passed with a ConfigMap. These can be used to pass important data like SSH keys, passwords, or even a configuration file like '**/etc/hosts**'.
+
+Be aware that any capacity mentioned does not represent an actual limit on the amount of space a container can consume. Should a volume have a capacity of, for example, 10G, that does not mean there is 10G of backend storage available. There could be more or less. If there is more and an application were to continue to write it, there is no block on how much space is used, with the possible exception of a newer limit on ephemeral storage usage. A new CSI driver has become available, so at least we can track actual usage.
 
 ## Introducing Volumes
 
-A Pod specification can declare one or more volumes and where they are made available. Each requires a name, a type, and a mount point. The same volume can be made available to multiple containers within a Pod, which can be a method of container-to-container communication. A volume can be made available to multiple Pods, with each given an access mode to write. There is no concurrency checking, which means data corruption is probable, unless outside locking takes place. 
+A Pod specification can declare one or more volumes and where they are made available. Each requires a name, a type, and a mount point. 
+
+Keeping acquired data or ingesting it into other containers is a common task, typically requiring the use of a PersistentVolumeClaim (pvc).
+
+The same volume can be made available to multiple containers within a Pod, which can be a method of container-to-container communication. A volume can be made available to multiple Pods, with each given an access mode to write. There is no concurrency checking, which means data corruption is probable, unless outside locking takes place.
 
 <img src=".\images\KubernetesPodVolumes.png"/>
 
@@ -43,6 +50,12 @@ The three access modes are:
 - **ReadWriteMany**: which allows read-write by many nodes. 
 
 Thus two pods on the same node can write to a **ReadWriteOnce**, but a third pod on a different node would not become ready due to a **FailedAttachVolume** error.
+
+We had seen an example of containers within a pod while learning about networking. Using the same example we see that the same volume can be used by all containers. In this case both are using the /data/ directory. MainApp reads and writes to the volume, and Logger uses the volume read-only. It then writes to a different volume /log/.
+
+Multiple Volumes in a Pod:
+
+<img src=".\images\NewPodNetwork.png"/>
 
 When a volume is requested, the local kubelet uses the **kubelet_pods.go** script to map the raw devices, determine and make the mount point for the container, then create the symbolic link on the host node filesystem to associate the storage to the container. The API server makes a request for the storage to the **StorageClass** plugin, but the specifics of the requests to the backend storage depend on the plugin in use.
  
@@ -79,13 +92,23 @@ The YAML file above would create a Pod with a single container with a volume nam
 
 There are several types that you can use to define volumes, each with their pros and cons. Some are local, and many make use of network-based resources.
 
+### GCEpersistentDisk and awsElasticBlockStore
+
 In GCE or AWS, you can use volumes of type GCEpersistentDisk or awsElasticBlockStore, which allows you to mount GCE and EBS disks in your Pods, assuming you have already set up accounts and privileges.
+
+### emptyDir and hostPath
 
 **emptyDir** and **hostPath** volumes are easy to use. As mentioned, **emptyDir** is an empty directory that gets erased when the Pod dies, but is recreated when the container restarts. The **hostPath** volume mounts a resource from the host node filesystem. The resource could be a directory, file socket, character, or block device. These resources must already exist on the host to be used. There are two types, **DirectoryOrCreate** and **FileOrCreate**, which create the resources on the host, and use them if they don't already exist. 
 
+### NFS and iSCSI
+
 NFS (Network File System) and iSCSI (Internet Small Computer System Interface) are straightforward choices for multiple readers scenarios.
 
+### rbd, CephFS and GlusterFS
+
 rbd for block storage or CephFS and GlusterFS, if available in your Kubernetes cluster, can be a good choice for multiple writer needs.
+
+### Other Volume Types
 
 Besides the volume types we just mentioned, there are many other possible, with more being added: azureDisk, azureFile, csi, downwardAPI, fc (fibre channel), flocker, gitRepo, local, projected, portworxVolume, quobyte, scaleIO, secret, storageos, vsphereVolume, persistentVolumeClaim, CSIPersistentVolumeSource, etc.​
 
@@ -140,7 +163,7 @@ $ kubectl get pvc
 
 There are several phases to persistent storage. 
 
-### Persistent Storage Phases
+### Phases to Persistent Storage
 
 **Provision**: **Provisioning** can be from PVs created in advance by the cluster administrator, or requested from a dynamic source, such as the cloud provider.
 
@@ -177,7 +200,7 @@ spec:
 
 Each type will have its own configuration settings. For example, an already created Ceph or GCE Persistent Disk would not need to be configured, but could be claimed from the provider.
 
-Persistent volumes are not a namespaces object, but persistent volume claims are. A beta feature of v1.13 allows for static provisioning of Raw Block Volumes, which currently support the Fibre Channel plugin, AWS EBS, Azure Disk and RBD plugins among others. 
+Persistent volumes are not a namespaces object, but persistent volume claims are. A beta feature of v1.13 allows for static provisioning of Raw Block Volumes, which currently support the Fibre Channel plugin, AWS EBS, Azure Disk and RBD plugins among others. There is a lot of development and change in this area, with plugins adding dynamic provisioning.
 
 The use of locally attached storage has been graduated to a stable feature. This feature is often used as part of distributed filesystems and databases.
 
@@ -251,6 +274,11 @@ provisioner: kubernetes.io/gce-pd
 parameters: 
   type: pd-ssd 
 ```
+
+There are also providers you can create inside of you cluster, which use Custom Resource Definitions and local operators to manage storage.
+
+- Rook: Is a graduated CNCF project which allows easy management of several back-end storage types, including an easy way to deploy Ceph.
+- Longhorn: Is a CNCF project in sandbox status, developed by Rancher which also allows management of local storage.
 
 ## Using Rook for Storage Orchestration
 
