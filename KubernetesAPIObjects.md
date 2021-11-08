@@ -134,7 +134,7 @@ As we've already mentioned, it is the lowest unit we can manage; it runs the app
 > - [Kubernetes API Objects](KubernetesAPIObjects.md)
 >   - [Node](Node.md)
 >   - [Namespaces](Namespaces.md)
->   - [Pod](Pod.md)
+>   - [Pods](Pods.md)
 >   - [ReplicationController](ReplicationController.md)
 >   - [ReplicaSet](ReplicaSet.md)
 >   - [DeamonSet](DeamonSets.md)

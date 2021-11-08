@@ -38,7 +38,15 @@ A pod represents a group of co-located containers with some associated data volu
 
 The graphic shows a pod with two containers, A and B, and two data volumes, 1 and 2. Containers A and B share the network namespace of a third container, known as the pause container. The pause container is used to get an IP address, then all the containers in the pod will use its network namespace. Volumes 1 and 2 are shown for completeness.
 
+Single IP, Multiple Volumes:
+
+<img src=".\images\NewPodNetwork.png"/>
+
+The diagram above shows a pod with two containers, MainApp and Logger, and two data volumes, made available under two mount points. Containers MainApp and Logger share the network namespace of a third container, known as the pause container. The pause container is used to get an IP address, then all the containers in the pod will use its network namespace. You won’t see this container from the Kubernetes perspective, but you would by running sudo docker ps.
+
 To communicate with each other, containers within pods can use the loopback interface, write to files on a common filesystem, or via inter-process communication (IPC). There is now a network plugin from HPE Labs which allows multiple IP addresses per pod, but this feature has not grown past this new plugin.
+
+Support for dual-stack, IPv4 and IPv6 continues to increase with each release. For example, in a recent release kube-proxy iptables supports both stacks simultaneously.
 
 Starting as an alpha feature in 1.16 is the ability to use IPv4 and IPv6 for pods and services. In the current version, when creating a service, you need to create the network for each address family separately.
 
@@ -130,6 +138,8 @@ Basically, all IPs involved (nodes and pods) are routable without NAT. This can 
 - Flannel
 - Calico
 - Romana​
+
+Most network plugins now support the use of Network Policies, which act as an internal firewall, limiting ingress and egress traffic.
 
 See the list of networking add-ons for a more complete list.
 

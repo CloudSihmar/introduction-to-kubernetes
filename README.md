@@ -26,7 +26,7 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 > - [Kubernetes API Objects](KubernetesAPIObjects.md)
 >   - [Node](Node.md)
 >   - [Namespaces](Namespaces.md)
->   - [Pod](Pod.md)
+>   - [Pods](Pods.md)
 >   - [ReplicationController](ReplicationController.md)
 >   - [ReplicaSet](ReplicaSet.md)
 >   - [DeamonSets](DeamonSets.md)
