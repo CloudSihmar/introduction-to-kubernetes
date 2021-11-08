@@ -40,6 +40,15 @@ Label selectors determine which pods belong to the Service.
 
 <img src=".\images\p3_service_labelselector.jpg"/>
 
+With every object and agent decoupled we need a flexible and scalable operator which connects resources together and will reconnect, should something die and a replacement is spawned. Each Service is a microservice handling a particular bit of traffic, such as a single NodePort or a LoadBalancer to distribute inbound requests among many Pods.
+
+A Service also handles access policies for inbound requests, useful for resource control, as well as for security.
+
+A service, as well as kubectl, uses a selector in order to know which objects to connect. There are two selectors currently supported:
+
+- **equality-based**: Filters by label keys and their values. Three operators can be used, such as =, ==, and !=. If multiple values or keys are used, all must be included for a match.
+- **set-based**: Filters according to a set of values. The operators are in, notin, and exists. For example, the use of status notin (dev, test, maint) would select resources with the key of status which did not have a value of dev, test, nor maint.
+
 ### Creating Services
 
 Service is created by posting a JSON or YAML descriptor to the Kubernetes API server.

@@ -38,6 +38,14 @@ Google's infrastructure started reaching high scale before virtual machines beca
 
 The name Kubernetes originates from Greek, meaning helmsman or pilot. Keeping with the maritime theme of Docker containers, Kubernetes is the pilot of a ship of containers. Due to the difficulty in pronouncing the name, many will use a nickname, K8s, as Kubernetes has eight letters between K and S. K8s as an abbreviation results from counting the eight letters between the "K" and the "s". 
 
+Kubernetes can be an integral part of Continuous Integration/Continuous Delivery (CI/CD), as it offers many of the necessary components.
+
+**Continuous Integration**: A consistent way to build and test software. Deploying new packages with code written each day, or every hour, instead of quarterly. Tools like Helm and Jenkins are often part of this with Kubernetes.
+
+**Continuous Delivery**: An automated way to test and deploy software into various environments. Kubernetes handles the lifecycle of containers and connection of infrastructure resources to make rolling updates and rollbacks easy, among other deployment schemes.
+
+There are several options and possible configurations when building a CI/CD pipeline. Tools such as Jenkins, Spinnaker, GitHub, GitLab and Helm, among others, may be part of your particular pipeline.
+
 ## History of Kubernetes
 
 Kubernetes was founded by Joe Beda, Brendan Burns, and Craig McLuckie, who were quickly joined by other Google engineers including Brian Grant and Tim Hockin, and was first announced by Google in mid-2014. 
@@ -90,6 +98,12 @@ Deploying containers and using Kubernetes may require a change in the developmen
 Instead of using a large server, Kubernetes approaches the same issue by deploying a large number of small servers, or microservices. The server and client sides of the application are written to expect that there are many possible agents available to respond to a request. It is also important that clients expect the server processes to die and be replaced, leading to a transient server deployment. Instead of a large Apache web server with many httpd daemons responding to page requests, there would be many nginx servers, each responding.
 
 The transient nature of smaller services also allows for decoupling. Each aspect of the traditional application is replaced with a dedicated, but transient, microservice or agent. To join these agents, or their replacements together, we use services. A service ties traffic from one agent to another (for example, a frontend web server to a backend database) and handles new IP or other information, should either one die and be replaced.
+
+Developers new to Kubernetes sometimes assume it is another virtual-machine manager, similar to what they have been using for decades, and continue to develop applications in the same way as prior to using Kubernetes. This is a mistake. The decoupled, transient, microservice architecture is not the same. Most legacy applications will need to be rewritten to optimally run in a cloud. 
+
+<img src=".\images\ArchitectureDifference.png"/>
+
+In the diagram above we see the legacy deployment strategy on the left with a monolithic applications deployed to nodes. On the right, we see an example of the same functionality, on the same hardware, using multiple microservices.
 
 Communication is entirely API call-driven, which allows for flexibility. Cluster configuration information is stored in a JSON format inside of etcd, but is most often written in YAML by the community. Kubernetes agents convert the YAML to JSON prior to persistence to the database. 
 
@@ -155,7 +169,8 @@ Containers provide a great way to package, ship, and run applications - that is 
 The developer experience has been boosted tremendously thanks to containers. Containers, and Docker specifically, have empowered developers with ease of building container images, simplicity of sharing images via Docker registries, and providing a powerful user experience to manage containers.
 
 However, managing containers at scale and designing a distributed application based on microservices' principles may be challenging.
-A smart first step is deciding on a continuous integration/continuous delivery (CI/CD) pipeline to build, test and verify container images. Tools such as Spinnaker, Jenkins and Helm can be helpful to use, among other possible tools. This will help with the challenges of a dynamic environment.
+
+You first need a continuous integration pipeline to build your container images, test them, and verify them. A smart first step is deciding on a continuous integration/continuous delivery (CI/CD) pipeline to build, test and verify container images. Tools such as Spinnaker, Jenkins and Helm can be helpful to use, among other possible tools. This will help with the challenges of a dynamic environment. 
 
 Then, you need a cluster of machines acting as your base infrastructure on which to run your containers. You also need a system to launch your containers, and watch over them when things fail and replace as required. Rolling updates and easy rollbacks of containers is an important feature, and eventually tear down the resource when no longer needed.
 

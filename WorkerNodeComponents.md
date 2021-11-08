@@ -22,7 +22,11 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 All nodes run the kubelet and kube-proxy, as well as the container engine, such as Docker or cri-o, among several options. Other management daemons are deployed to watch these agents or provide services not yet included with Kubernetes.
 
-The kubelet interacts with the underlying container engine also installed on all the nodes, and makes sure that the containers that need to run are actually running. The kube-proxy is in charge of managing the network connectivity to the containers. It does so through the use of iptables entries. It also has the userspace mode, in which it monitors Services and Endpoints using a random port to proxy traffic via ipvs. A network plugin pod, such as calico-node, may be found depending on the plugin in use.
+The kubelet interacts with the underlying container engine also installed on all the nodes, and makes sure that the containers that need to run are actually running. The kubelet agent is the heavy lifter for changes and configuration on worker nodes. It accepts the API calls for Pod specifications (a PodSpec is a JSON or YAML file that describes a Pod). It will work to configure the local node until the specification has been met.
+
+Should a Pod require access to storage, Secrets or ConfigMaps, the kubelet will ensure access or creation. It also sends back status to the kube-apiserver for eventual persistence.
+
+The kube-proxy is in charge of managing the network connectivity to the containers. It does so through the use of iptables entries. It also has the userspace mode, in which it monitors Services and Endpoints using a random port to proxy traffic via ipvs. Use of ipvs can be enabled, with the expectation it will become the default, replacing iptables. A network plugin pod, such as calico-node, may be found depending on the plugin in use.
 
 Each node could run in a different engine. It is likely that Kubernetes will support additional container runtime engines.
 

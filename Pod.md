@@ -69,6 +69,20 @@ Usually you don't need to create Pods directly, even singleton Pods. Instead, cr
 
 ### Creating Pods
 
+Pods and other objects can be created in several ways. They can be created by using a generator, which. historically, has changed with each release:
+
+```shell
+$ kubectl run newpod --image=nginx --generator=run-pod/v1
+```
+
+Or, they can be created and deleted using properly formatted JSON or YAML files:
+
+```shell
+$ kubectl create -f newpod.yaml
+
+$ kubectl delete -f newpod.yaml
+```
+
 Pods are usually created by posting a JSON or YAML manifest to the Kubernetes REST API endpoint. 
 
 The pod definition consists following main parts:
@@ -94,6 +108,8 @@ spec:
     ports:
     - containerPort: 80
 ```
+
+Other objects will be created by operators/watch-loops to ensure the specifications and current status are the same. 
 
 ### Containers
 
