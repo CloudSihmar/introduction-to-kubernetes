@@ -20,6 +20,8 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 ## Jobs
 
+Just as we may need to redesign our applications to be decoupled, we may also consider that microservices may not need to run all the time. The use of Jobs and CronJobs can further assist with implementing decoupled and transient microservices.
+
 Jobs are part of the batch API group. They are used to run a set number of pods to completion. If a pod fails, it will be restarted until the number of completion is reached.
 
 While they can be seen as a way to do batch processing in Kubernetes, they can also be used to run one-off pods. A Job specification will have a parallelism and a completion key. If omitted, they will be set to one. If they are present, the parallelism number will set the number of pods that can run concurrently, and the completion number will set how many pods need to run successfully for the Job itself to be considered done. Several Job patterns can be implemented, like a traditional work queue. 

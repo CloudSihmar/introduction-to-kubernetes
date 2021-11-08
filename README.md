@@ -27,6 +27,7 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 >   - [Node](Node.md)
 >   - [Namespaces](Namespaces.md)
 >   - [Pods](Pods.md)
+>   - [Labels](Labels.md)
 >   - [ReplicationController](ReplicationController.md)
 >   - [ReplicaSet](ReplicaSet.md)
 >   - [DeamonSets](DeamonSets.md)
