@@ -40,3 +40,62 @@ A service also handles access policies for inbound requests, useful for resource
 - Expose Pods to Internet 
 - Decouple settings 
 - Define Pod access policy.
+
+## Overview
+
+A Kubernetes operator is a method of packaging, deploying, and managing a Kubernetes application. A Kubernetes application is both deployed on Kubernetes and managed using the Kubernetes API (application programming interface) and kubectl tooling.
+
+**A Kubernetes operator is an application-specific controller that extends the functionality of the Kubernetes API to create, configure, and manage instances of complex applications on behalf of a Kubernetes user.**
+
+**It builds upon the basic Kubernetes resource and controller concepts, but includes domain or application-specific knowledge to automate the entire life cycle of the software it manages.**
+
+In Kubernetes, controllers of the control plane implement control loops that repeatedly compare the desired state of the cluster to its actual state. If the cluster's actual state doesn’t match the desired state, then the controller takes action to fix the problem. 
+
+**An operator is a custom Kubernetes controller that uses custom resources (CR) to manage applications and their components. High-level configuration and settings are provided by the user within a CR. The Kubernetes operator translates the high-level directives into the low level actions, based on best practices embedded within the operator’s logic.**
+
+A custom resource is the API extension mechanism in Kubernetes. A custom resource definition (CRD) defines a CR and lists out all of the configuration available to users of the operator. 
+
+The Kubernetes operator watches a CR type and takes application-specific actions to make the current state match the desired state in that resource.
+
+Kubernetes operators introduce new object types through custom resource definitions. Custom resource definitions can be handled by the Kubernetes API just like built-in objects, including interaction via kubectl and inclusion in role-based access control (RBAC) policies.
+
+A Kubernetes operator continues to monitor its application as it runs, and can back up data, recover from failures, and upgrade the application over time, automatically. 
+
+The actions a Kubernetes operator performs can include almost anything: scaling a complex app, application version upgrades, or even managing kernel modules for nodes in a computational cluster with specialized hardware.
+
+## How operators manage Kubernetes applications
+
+Kubernetes can manage and scale stateless applications, such as web apps, mobile backends, and API services, without requiring any additional knowledge about how these applications operate. The built-in features of Kubernetes are designed to easily handle these tasks.
+
+However, stateful applications, like databases and monitoring systems, require additional domain-specific knowledge that Kubernetes doesn’t have. It needs this knowledge in order to scale, upgrade, and reconfigure these applications.
+
+Kubernetes operators encode this specific domain knowledge into Kubernetes extensions so that it can manage and automate an application’s life cycle. 
+
+By removing difficult manual application management tasks, Kubernetes operators make these processes scalable, repeatable, and standardized.
+
+For application developers, operators make it easier to deploy and run the foundation services on which their apps depend. 
+
+For infrastructure engineers and vendors, operators provide a consistent way to distribute software on Kubernetes clusters and reduce support burdens by identifying and correcting application problems. 
+
+Operators allow you to write code to automate a task, beyond the basic automation features provided in Kubernetes. For teams following a DevOps or site reliability engineering (SRE) approach, operators were developed to put SRE practices into Kubernetes. 
+
+The function of the operator pattern is to capture the intentions of how a human operator would manage a service. A human operator needs to have a complete understanding of how an app or service should work, how to deploy it, and how to fix any problems that may occur.
+
+The site reliability engineer or operations team typically writes the software to manage an application, but an operator is designed to take human operational knowledge and encode it into software to manage and deploy Kubernetes workloads while eliminating manual tasks. 
+
+Operators are best built by those that are experts in the business logic of installing, running, and upgrading a particular application.
+
+The creation of an operator often starts with automating the application’s installation and self-service provisioning, and follows with more complex automation capabilities.
+
+There is also a Kubernetes operator software development kit (SDK) that can help you develop your own operator. The SDK provides the tools to build, test, and package operators with a choice of creating operators using Helm charts, Ansible Playbooks or Golang
+
+## Operator Framework
+
+The Operator Framework is an open source project that provides developer and runtime Kubernetes tools, enabling you to accelerate the development of an operator.
+
+The Operator Framework includes:
+
+- **Operator SDK**: Enables developers to build operators based on their expertise without requiring knowledge of Kubernetes API complexities.
+- **Operator Lifecycle Management**: Oversees installation, updates, and management of the lifecycle of all of the operators running across a Kubernetes cluster.
+- **Operator Metering**: Enables usage reporting for operators that provide specialized services.
+

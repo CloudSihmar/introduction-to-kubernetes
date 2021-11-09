@@ -16,7 +16,8 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 **LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial purposes. If you find this document useful in any means please support the original authors for ethical reasons.** 
 
-**Content**
+
+**Introductory Content**
 
 > - [Understanding Kubernetes](UnderstandingKubernetes.md)
 > - [Kubernetes Components](KubernetesComponents.md)
@@ -33,13 +34,19 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 >   - [DeamonSets](DeamonSets.md)
 >   - [StatefulSet](StatefulSet.md)
 >   - [Job and CronJob](JobAndCronJob.md)
-> - [Kubernetes Networking](KubernetesNetworking.md)
 > - [Managing State with Deployments](ManagingStateWithDeployments.md)
 >   - [Autoscaling](Autoscaling.md)
-> - [Volumes and Data](VolumesAndData.md)
->   - [ConfigMaps and Secrets](ConfigMapsAndSecrets.md)
+> - [Kubernetes Networking](KubernetesNetworking.md)
 > - [Services](Services.md)
 > - [Ingress](Ingress.md)
+> - [Volumes and Data](VolumesAndData.md)
+>   - [ConfigMaps and Secrets](ConfigMapsAndSecrets.md)
+
+
+**Advanced Content**
+
+> - [Service Accounts](ServiceAccounts.md)
+> - [Custom Resource Definitions](CustomResourceDefinitions.yaml)
 > - [Operators](Operators.md)
 > - [Security](Security.md)
 >   - [RBAC](RBAC.md)
