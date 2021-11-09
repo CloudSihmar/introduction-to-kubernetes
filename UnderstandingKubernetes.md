@@ -85,7 +85,7 @@ Borg has inspired current data center systems, as well as the underlying technol
 
 ### Future of Kubernetes
 
-Nowadays, there is a growing excitement about ‘serverless’ technologies,and Lambda-based architectures, and some would argue that Kubernetes is moving in the opposite direction.
+Nowadays, there is a growing excitement about ‘serverless’ technologies, and Lambda-based architectures, and some would argue that Kubernetes is moving in the opposite direction.
 
 However, Kubernetes has it’s place in ‘increasingly serverless’ world. Kubernetes has the opportunity to be the servers of the serverless world. Tools like Kubeless and Fission providing equivalents to functions-as-a-service but running within Kubernetes. 
 
