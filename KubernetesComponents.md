@@ -115,6 +115,9 @@ Kubernetes cluster is split into two parts:
 >   - Heapster
 >   - The Container Network Interface network plugin
 
+> - Kubernetes Command Line Interface
+>   - kubectl   
+
 <img src=".\images\Kubernetes_Architecture_Simplified.jpg"/>
 
 Kubernetes system components communicate only with the API server. They don’t talk to each other directly. The API server is the only component that communicates with etcd. None of the other components communicate with etcd directly, but instead modify the cluster state by talking to the API server.

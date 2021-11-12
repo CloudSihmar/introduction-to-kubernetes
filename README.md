@@ -35,8 +35,10 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 >   - [StatefulSet](StatefulSet.md)
 >   - [Job and CronJob](JobAndCronJob.md)
 > - [Managing State with Deployments](ManagingStateWithDeployments.md)
+>   - [Kubernetes Deployment Strategies](KubernetesDeploymentStrategies.md)
 >   - [Autoscaling](Autoscaling.md)
 > - [Kubernetes Networking](KubernetesNetworking.md)
+>   - [Network Policy](NetworkPolicy.md)
 > - [Services](Services.md)
 > - [Ingress](Ingress.md)
 > - [Volumes and Data](VolumesAndData.md)
@@ -45,8 +47,9 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 **Advanced Content**
 
-> - [Service Accounts](ServiceAccounts.md)
+> - [Bootstrap Kubernetes](BootstrapKubernetes.md)
 > - [Custom Resource Definitions](CustomResourceDefinitions.yaml)
-> - [Operators](Operators.md)
+>   - [Operators](Operators.md)
 > - [Security](Security.md)
 >   - [RBAC](RBAC.md)
+>   - [Service Accounts](ServiceAccounts.md)

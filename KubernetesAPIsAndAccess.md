@@ -20,6 +20,10 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 # Kubernetes APIs and Access
 
+## kubectl
+
+Kubernetes objects can be created, updated, and deleted by using the kubectl command-line tool along with an object configuration file written in YAML or JSON.
+
 ## API Access
 
 Kubernetes has a powerful REST-based API. The entire architecture is API-driven. Knowing where to find resource endpoints and understanding how the API changes between versions can be important to ongoing administrative tasks, as there is much ongoing change and growth. Starting with v1.16 deprecated objects are no longer honored by the API server.
