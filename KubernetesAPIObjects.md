@@ -87,7 +87,7 @@ For example, you could drill down to find included objects at this URL:
 If you follow this URL, you will find only one resource, with a name of apiservices. If it seems to be listed twice, the lower output is for status. You'll notice that there are different verbs or actions for each. Another entry is if this object is namespaced, or restricted to only one namespace. In this case, it is not. 
 
 ```shell
-​$ curl https://localhost:6443/apis --header "Authorization: Bearer $token" -k
+$ curl https://localhost:6443/apis --header "Authorization: Bearer $token" -k
 ```
 
 ```json
@@ -130,6 +130,8 @@ Orchestrates individual pod lifecycle and updates. These are newer versions of R
 As we've already mentioned, it is the lowest unit we can manage; it runs the application container, and possibly support containers.
 
 ## Kubernetes API Objects
+
+<img src=".\images\kubernetes-api-objects-primitives.png" style="zoom:80%;" />
 
 > - [Kubernetes API Objects](KubernetesAPIObjects.md)
 >   - [Node](Node.md)

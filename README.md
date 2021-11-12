@@ -33,7 +33,7 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 >   - [ReplicaSet](ReplicaSet.md)
 >   - [DeamonSets](DeamonSets.md)
 >   - [StatefulSet](StatefulSet.md)
->   - [Job and CronJob](JobAndCronJob.md)
+>   - [Jobs and CronJobs](JobsAndCronJobs.md)
 > - [Managing State with Deployments](ManagingStateWithDeployments.md)
 >   - [Kubernetes Deployment Strategies](KubernetesDeploymentStrategies.md)
 >   - [Autoscaling](Autoscaling.md)
