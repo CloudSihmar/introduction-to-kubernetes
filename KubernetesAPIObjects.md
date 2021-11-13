@@ -104,6 +104,53 @@ It is an extremely useful tool, allowing you to define quotas per namespace. For
 
 Generally, you do not manage endpoints. They represent the set of IPs for pods that match a particular service. They are handy when you want to check that a service actually matches some running pods. If an endpoint is empty, then it means that there are no matching pods and something is most likely wrong with your service definition.
 
+## Object Management
+
+You can create objects in a Kubernetes cluster in two ways: imperatively or declaratively. The following sections will describe each approach, including their benefits, drawbacks, and use cases.
+
+### Imperative Approach
+
+The imperative method for object creation does not require a manifest definition. You would use the kubectl run or kubectl create command to create an object on the fly. Any configuration needed at runtime is provided by command-line options. The benefit of this approach is the fast turnaround time without the need to wrestle with YAML structures:
+
+```shell
+$ kubectl run frontend --image=nginx --restart=Never --port=80
+
+pod/frontend created
+```
+
+### Declarative Approach
+
+The declarative approach creates objects from a manifest file (in most cases, a YAML file) using the kubectl create or kubectl apply command. The benefit of using the declarative method is reproducibility and improved maintenance, as the file is checked into version control in most cases. The declarative approach is the recommended way to create objects in production environments:
+
+```shell
+$ vim pod.yaml
+
+$ kubectl create -f pod.yaml
+
+pod/frontend created
+```
+
+### Hybrid Approach
+
+Sometimes, you may want to go with a hybrid approach. You can start by using the imperative method to produce a manifest file without actually creating an object. You do so by executing the kubectl run command with the command-line options **'-o yaml'** and **'--dry-run=client'**:
+
+```shell
+$ kubectl run frontend --image=nginx --restart=Never --port=80 -o yaml --dry-run=client > pod.yaml
+
+$ vim pod.yaml
+
+$ kubectl create -f pod.yaml
+
+pod/frontend created
+
+$ kubectl describe pod frontend
+
+Name:         frontend
+Namespace:    default
+Priority:     0
+...
+```
+
 ## Discovering API Groups
 
 We can take a closer look at the output of the request for current APIs. Each of the name values can be appended to the URL to see details of that group. 

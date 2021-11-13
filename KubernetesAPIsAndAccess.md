@@ -26,6 +26,34 @@ Kubernetes has a powerful REST-based API. The entire architecture is API-driven.
 
 The main agent for communication between cluster agents and from outside the cluster is the kube-apiserver. A curl query to the agent will expose the current API groups. Groups may have multiple versions, which evolve independently of other groups, and follow a domain-name format with several names reserved, such as single-word domains, the empty group, and any name ending in .k8s.io.
 
+## Swagger and OpenAPI
+
+The entire Kubernetes API was built using a Swagger specification. This has been evolving towards the OpenAPI initiative. It is extremely useful, as it allows, for example, to auto-generate client code. All the stable resources definitions are available on the documentation site. 
+
+You can browse some of the API groups via a Swagger UI on the OpenAPI Specification web page.
+
+https://swagger.io/specification/
+
+## API Maturity
+
+The use of API groups and different versions allows for development to advance without changes to an existing group of APIs. This allows for easier growth and separation of work among separate teams. While there is an attempt to maintain some consistency between API and software versions, they are only indirectly linked. 
+
+The use of JSON and Google's Protobuf serialization scheme will follow the same release guidelines.
+
+**Alpha**: An Alpha level release, noted with alpha in the names, may be buggy and is disabled by default. Features could change or disappear at any time, and backward compatibility is not guaranteed. Only use these features on a test cluster which is often rebuilt.
+
+**Beta**: The Beta levels, found with beta in the names, has more well-tested code and is enabled by default. It also ensures that, as changes move forward, they will be tested for backwards compatibility between versions. It has not been adopted and tested enough to be called stable. You can expect some bugs and issues.
+
+**Stable**: Use of the Stable version, denoted by only an integer which may be preceded by the letter v, is for stable APIs. At the moment, v1 is the only stable version.
+
+## Optimistic Concurrency
+
+The default serialization for API calls must be JSON. There is an effort to use Google's protobuf serialization, but this remains experimental. While we may work with files in a YAML format, they are converted to and from JSON.
+
+Kubernetes uses the resourceVersion value to determine API updates and implement optimistic concurrency. In other words, an object is not locked from the time it has been read until the object is written.
+
+Instead, upon an updated call to an object, the resourceVersion is checked, and a 409 CONFLICT is returned, should the number have changed. The resourceVersion is currently backed via the modifiedIndex parameter in the etcd database, and is unique to the namespace, kind, and server. Operations which do not change an object, such as WATCH or GET, do not update this value.
+
 ## RESTful
 
 kubectl makes API calls on your behalf, responding to typical HTTP verbs (GET, POST, DELETE). You can also make calls externally, using curl or other program. With the appropriate certificates and keys, you can make requests, or pass JSON files to make configuration changes.
@@ -38,13 +66,47 @@ https://k8sServer:6443/api/v1/pods 
 
 The ability to impersonate other users or groups, subject to RBAC configuration, allows a manual override authentication. This can be helpful for debugging authorization policies of other users.
 
-## Optimistic Concurrency
+## /etc/kubernetes/admin.conf & ~/.kube/config
 
-The default serialization for API calls must be JSON. There is an effort to use Google's protobuf serialization, but this remains experimental. While we may work with files in a YAML format, they are converted to and from JSON.
+Take a look at the output below:
 
-Kubernetes uses the resourceVersion value to determine API updates and implement optimistic concurrency. In other words, an object is not locked from the time it has been read until the object is written.
+```yaml
+apiVersion: v1
+clusters:
+- cluster: 
+    certificate-authority-data: LS0tLS1CRUdF..... 
+    server: https://10.128.0.3:6443 
+    name: kubernetes
+contexts:
+- context: 
+    cluster: kubernetes 
+    user: kubernetes-admin 
+  name: kubernetes-admin@kubernetes
+current-context: kubernetes-admin@kubernetes
+kind: Config
+preferences: {}
+users:
+- name: kubernetes-admin 
+  user: 
+    client-certificate-data: LS0tLS1CRUdJTib..... 
+    client-key-data: LS0tLS1CRUdJTi....
+```
 
-Instead, upon an updated call to an object, the resourceVersion is checked, and a 409 CONFLICT is returned, should the number have changed. The resourceVersion is currently backed via the modifiedIndex parameter in the etcd database, and is unique to the namespace, kind, and server. Operations which do not change an object, such as WATCH or GET, do not update this value. 
+The output above shows 19 lines of output, with each of the keys being heavily truncated. While the keys may look similar, close examination shows them to be distinct.
+
+**apiVersion**: As with other objects, this instructs the kube-apiserver where to assign the data.
+
+**clusters**: This key contains the name of the cluster, as well as where to send the API calls. The certificate-authority-data is passed to authenticate the curl request.
+
+**contexts**: This is a setting which allows easy access to multiple clusters, possibly as various users, from one configuration file. It can be used to set namespace, user, and cluster.
+
+**current-context**: This shows which cluster and user the kubectl command would use. These settings can also be passed on a per-command basis.
+
+**kind**: Every object within Kubernetes must have this setting; in this case, a declaration of object type Config.
+
+**preferences**: Currently not used, this is an optional settings for the kubectl command, such as colorizing output.
+
+**users**: A nickname associated with client credentials, which can be client key and certificate, username and password, and a token. Token and username/password are mutually exclusive. These can be configured via the kubectl config set-credentials command. 
 
 ## Using kubectl to Interact with the Kubernetes Cluster
 
@@ -59,6 +121,52 @@ $ kubectl [command] [TYPE] [NAME] [flags]
 ```
 
 <img src=".\images\kubectl-usage-pattern.png"/>
+
+## API Resources with kubectl
+
+All API resources exposed are available via kubectl. 
+To get more information, do '**kubectl help**'.
+
+Expect the list below to change:
+
+- all
+- events (ev)
+- podsecuritypolicies (psp)
+- certificatesigningrequests (csr)
+- horizontalpodautoscalers (hpa)
+- podtemplates
+- clusterrolebindings
+- ingresses (ing)
+- replicasets (rs)
+- clusterroles
+- jobs
+- replicationcontrollers (rc)
+- clusters (valid only for federation apiservers)
+- limitranges (limits)
+- resourcequotas (quota)
+- componentstatuses (cs)
+- namespaces (ns)
+- rolebindings
+- configmaps (cm)
+- networkpolicies (netpol)
+- roles
+- controllerrevisions
+- nodes (no)
+- secrets
+- cronjobs
+- persistentvolumeclaims (pvc)
+- serviceaccounts (sa)
+- customresourcedefinition (crd)
+- persistentvolumes (pv)
+- services (svc)
+- daemonsets (ds)
+- poddisruptionbudgets (pdb)
+- statefulsets
+- deployments (deploy)
+- podpreset
+- storageclasses
+- endpoints (ep)
+- pods (po)
 
 ## Checking Access
 
@@ -161,97 +269,6 @@ I1215 17:35:46.725407 27695 loader.go:357] 
 
 Without the certificate authority, key and certificate from this file, only insecure curl commands can be used, which will not expose much due to security settings. We will use curl to access our cluster using TLS in an upcoming lab.
 
-## ~/.kube/config
-
-Take a look at the output below:
-
-```yaml
-apiVersion: v1
-clusters:
-- cluster: 
-    certificate-authority-data: LS0tLS1CRUdF..... 
-    server: https://10.128.0.3:6443 
-    name: kubernetes
-contexts:
-- context: 
-    cluster: kubernetes 
-    user: kubernetes-admin 
-  name: kubernetes-admin@kubernetes
-current-context: kubernetes-admin@kubernetes
-kind: Config
-preferences: {}
-users:
-- name: kubernetes-admin 
-  user: 
-    client-certificate-data: LS0tLS1CRUdJTib..... 
-    client-key-data: LS0tLS1CRUdJTi....
-```
-
-The output above shows 19 lines of output, with each of the keys being heavily truncated. While the keys may look similar, close examination shows them to be distinct.
-
-**apiVersion**: As with other objects, this instructs the kube-apiserver where to assign the data.
-
-**clusters**: This key contains the name of the cluster, as well as where to send the API calls. The certificate-authority-data is passed to authenticate the curl request.
-
-**contexts**: This is a setting which allows easy access to multiple clusters, possibly as various users, from one configuration file. It can be used to set namespace, user, and cluster.
-
-**current-context**: This shows which cluster and user the kubectl command would use. These settings can also be passed on a per-command basis.
-
-**kind**: Every object within Kubernetes must have this setting; in this case, a declaration of object type Config.
-
-**preferences**: Currently not used, this is an optional settings for the kubectl command, such as colorizing output.
-
-**users**: A nickname associated with client credentials, which can be client key and certificate, username and password, and a token. Token and username/password are mutually exclusive. These can be configured via the kubectl config set-credentials command.
-
-## API Resources with kubectl
-
-All API resources exposed are available via kubectl. To get more information, do kubectl help.
-
-```shell
-kubectl [command] [type] [Name] [flag]
-```
-
-Expect the list below to change:
-
-- all
-- events (ev)
-- podsecuritypolicies (psp)
-- certificatesigningrequests (csr)
-- horizontalpodautoscalers (hpa)
-- podtemplates
-- clusterrolebindings
-- ingresses (ing)
-- replicasets (rs)
-- clusterroles
-- jobs
-- replicationcontrollers (rc)
-- clusters (valid only for federation apiservers)
-- limitranges (limits)
-- resourcequotas (quota)
-- componentstatuses (cs)
-- namespaces (ns)
-- rolebindings
-- configmaps (cm)
-- networkpolicies (netpol)
-- roles
-- controllerrevisions
-- nodes (no)
-- secrets
-- cronjobs
-- persistentvolumeclaims (pvc)
-- serviceaccounts (sa)
-- customresourcedefinition (crd)
-- persistentvolumes (pv)
-- services (svc)
-- daemonsets (ds)
-- poddisruptionbudgets (pdb)
-- statefulsets
-- deployments (deploy)
-- podpreset
-- storageclasses
-- endpoints (ep)
-- pods (po)
-
 ## Additional Resource Methods
 
 In addition to basic resource management via REST, the API also provides some extremely useful endpoints for certain resources. 
@@ -277,23 +294,3 @@ GET /api/v1/namespaces/{namespace}/pods/{name}/exec
 GET /api/v1/namespaces/{namespace}/pods/{name}/log
 GET /api/v1/watch/namespaces/{namespace}/pods/{name}
 ```
-
-## Swagger and OpenAPI
-
-The entire Kubernetes API was built using a Swagger specification. This has been evolving towards the OpenAPI initiative. It is extremely useful, as it allows, for example, to auto-generate client code. All the stable resources definitions are available on the documentation site. 
-
-You can browse some of the API groups via a Swagger UI on the OpenAPI Specification web page.
-
-https://swagger.io/specification/
-
-## API Maturity
-
-The use of API groups and different versions allows for development to advance without changes to an existing group of APIs. This allows for easier growth and separation of work among separate teams. While there is an attempt to maintain some consistency between API and software versions, they are only indirectly linked. 
-
-The use of JSON and Google's Protobuf serialization scheme will follow the same release guidelines.
-
-**Alpha**: An Alpha level release, noted with alpha in the names, may be buggy and is disabled by default. Features could change or disappear at any time, and backward compatibility is not guaranteed. Only use these features on a test cluster which is often rebuilt.
-
-**Beta**: The Beta levels, found with beta in the names, has more well-tested code and is enabled by default. It also ensures that, as changes move forward, they will be tested for backwards compatibility between versions. It has not been adopted and tested enough to be called stable. You can expect some bugs and issues.
-
-**Stable**: Use of the Stable version, denoted by only an integer which may be preceded by the letter v, is for stable APIs. At the moment, v1 is the only stable version.
