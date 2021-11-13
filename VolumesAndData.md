@@ -20,6 +20,8 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 # Volumes and Data
 
+Applications in a container perform file I/O only to the container’s file system. If the read/write location is not associated to an external mount, then the files are lost at the end of the container’s life.
+
 Container engines have traditionally not offered storage that outlives the container. As containers are considered transient, this could lead to a loss of data, or complex exterior storage options. A Kubernetes volume shares the Pod lifetime, not the containers within. Should a container terminate, the data would continue to be available to the new container. 
 
 A volume is a directory, possibly pre-populated, made available to containers in a Pod. The creation of the directory, the backend storage of the data and the contents depend on the volume type. As of v1.13, there were 27 different volume types ranging from rbd to gain access to Ceph, to NFS, to dynamic volumes from a cloud provider like Google's gcePersistentDisk. Each has particular configuration options and dependencies. 

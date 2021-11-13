@@ -20,6 +20,8 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 # Kubernetes API Objects
 
+The Kubernetes environment is defined by a collection of objects, also called primitives. Each Kubernetes object represents a specific functionality of the system. 
+
 Kubernetes objects are persistent entities in the Kubernetes system. Kubernetes uses these entities to represent the state of your cluster. 
 
 They can describe:
@@ -42,17 +44,43 @@ Most often, the information about the objects are provided in .yaml (or .yml) fi
 
 ### Required fields in YAML files
 
+Each and every Kubernetes primitive follows a general structure, which you can observe if you have a deeper look at a manifest of an object. The primary markup language used for a Kubernetes manifest is YAML.
+
+<img src=".\images\kubernetes-object-structure.png"/>
+
 In the .yaml file for the Kubernetes object you want to create, you'll need to set values for the following fields:
 
-* apiVersion - Which version of the Kubernetes API you're using to create this object
+#### API version - apiVersion
 
-* kind - What kind of object you want to create
-* metadata - Data that helps uniquely identify the object, including a name string, UID, and optional namespace
-* spec - What state you desire for the object
+The Kubernetes API version defines the structure of a primitive and uses it to validate the correctness of the data. The API version serves a similar purpose as XML schemas to a XML document or JSON schemas to a JSON document. The API version shows which version of the Kubernetes API you're using to create this object.
+
+The version usually undergoes a maturity process—e.g., from alpha to beta to final. Sometimes you see different prefixes separated by a slash (e.g., apps). 
+
+You can list the API versions compatible with your cluster version by running the command: 
+
+```shell
+$ kubectl api-versions
+```
+
+#### Kind
+
+The kind defines the type of primitive—e.g., a Pod or a Service. It ultimately answers the question, “What type of object are we dealing with here?” or "What kind of object you want to create?".
+
+#### Metadata
+
+Metadata describes higher-level information about the object—e.g., its name, what namespace it lives in, or whether it defines labels and annotations. This section also defines the UID. Data that helps uniquely identify the object, including a name string, UID, and optional namespace.
+
+#### Spec
+
+The specification (“spec” for short) declares the desired state—e.g., how should this object look after it has been created? Which image should run in the container, or which environment variables should be set for? What state you desire for the object?
 
 The precise format of the object spec is different for every Kubernetes object, and contains nested fields specific to that object. 
 
 <img src=".\images\p3_example_yaml.jpg"/>
+
+#### Status
+
+The status describes the actual state of an object. The Kubernetes controllers and their reconcilliation loops constantly try to transition a Kubernetes object from the desired state into the actual state. The object has not yet been materialized if the YAML status shows the value {}.
 
 ## v1 API Group
 

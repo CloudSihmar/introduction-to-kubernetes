@@ -20,10 +20,6 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 # Kubernetes APIs and Access
 
-## kubectl
-
-Kubernetes objects can be created, updated, and deleted by using the kubectl command-line tool along with an object configuration file written in YAML or JSON.
-
 ## API Access
 
 Kubernetes has a powerful REST-based API. The entire architecture is API-driven. Knowing where to find resource endpoints and understanding how the API changes between versions can be important to ongoing administrative tasks, as there is much ongoing change and growth. Starting with v1.16 deprecated objects are no longer honored by the API server.
@@ -40,7 +36,29 @@ $ curl --cert userbob.pem --key userBob-key.pem \  
 https://k8sServer:6443/api/v1/pods 
 ```
 
-The ability to impersonate other users or groups, subject to RBAC configuration, allows a manual override authentication. This can be helpful for debugging authorization policies of other users. 
+The ability to impersonate other users or groups, subject to RBAC configuration, allows a manual override authentication. This can be helpful for debugging authorization policies of other users.
+
+## Optimistic Concurrency
+
+The default serialization for API calls must be JSON. There is an effort to use Google's protobuf serialization, but this remains experimental. While we may work with files in a YAML format, they are converted to and from JSON.
+
+Kubernetes uses the resourceVersion value to determine API updates and implement optimistic concurrency. In other words, an object is not locked from the time it has been read until the object is written.
+
+Instead, upon an updated call to an object, the resourceVersion is checked, and a 409 CONFLICT is returned, should the number have changed. The resourceVersion is currently backed via the modifiedIndex parameter in the etcd database, and is unique to the namespace, kind, and server. Operations which do not change an object, such as WATCH or GET, do not update this value. 
+
+## Using kubectl to Interact with the Kubernetes Cluster
+
+Kubernetes objects can be created, updated, and deleted by using the **kubectl** command-line tool along with an object configuration file written in YAML or JSON.
+
+**kubectl** is the primary tool to interact with the Kubernetes clusters from the command line. Therefore, it’s paramount to understand its ins and outs and practice its use heavily.
+
+A kubectl execution consists of a command, a resource type, a resource name, and optional command line flags:
+
+```shell
+$ kubectl [command] [TYPE] [NAME] [flags]
+```
+
+<img src=".\images\kubectl-usage-pattern.png"/>
 
 ## Checking Access
 
@@ -63,14 +81,6 @@ There are currently three APIs which can be applied to set who and what can be q
 - SelfSubjectRulesReview​: A review which shows allowed actions for a user within a particular namespace. 
 
 The use of reconcile allows a check of authorization necessary to create an object from a file. No output indicates the creation would be allowed.
-
-## Optimistic Concurrency
-
-The default serialization for API calls must be JSON. There is an effort to use Google's protobuf serialization, but this remains experimental. While we may work with files in a YAML format, they are converted to and from JSON.
-
-Kubernetes uses the resourceVersion value to determine API updates and implement optimistic concurrency. In other words, an object is not locked from the time it has been read until the object is written.
-
-Instead, upon an updated call to an object, the resourceVersion is checked, and a 409 CONFLICT is returned, should the number have changed. The resourceVersion is currently backed via the modifiedIndex parameter in the etcd database, and is unique to the namespace, kind, and server. Operations which do not change an object, such as WATCH or GET, do not update this value. 
 
 ## Using Annotations
 
@@ -120,6 +130,16 @@ curl -k -v -XDELETE -H "Accept: application/json, */*"
 -H "User-Agent: kubectl/v1.8.5 (linux/amd64) kubernetes/cce11c6"
 https://10.128.0.3:6443/api/v1/namespaces/default/pods/firstpod
 ....
+```
+
+### Deleting Kubernetes Objects
+
+You might create Kubernetes objects with incorrect configuration, or you may simply want to start over from scratch. By default, Kubernetes tries to delete objects gracefully, which can can take up to 30 seconds. Use the command line option **--grace-period=0** and **--force** to send a SIGKILL signal. 
+
+The signal will delete a Kubernetes object immediately:
+
+```shell
+$ kubectl delete pod nginx --grace-period=0 --force
 ```
 
 ## Access from Outside the Cluster
