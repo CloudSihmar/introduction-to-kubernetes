@@ -9,16 +9,17 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 **Resources:**
 
 > - Kubernetes Documentation - https://kubernetes.io/docs/home/
-> - Kubernetes in Action - Marko Lukša 
-> - Kubernetes Fundamentals (LFS258) - The Linux Foundation
-> - Kubernetes for Developers (LFD259) - The Linux Foundation
+> - Kubernetes in Action - Marko Lukša - Manning Publications
+> - Kubernetes Fundamentals (LFS258) - Timothy Serewicz - The Linux Foundation
+> - Kubernetes for Developers (LFD259) - Timothy Serewicz - The Linux Foundation
+> - Certified Kubernetes Application Developer (CKAD) Study Guide - Benjamin Muschko - O'Reilly Media
 > - Getting Started with Kubernetes - Sander van Vugt - Addison-Wesley Professional
 
-**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial purposes. If you find this document useful in any means please support the original authors for ethical reasons.** 
+**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial intentions. If you find this document useful in any means please support the original authors for ethical reasons.** 
 
 [Return to the README page.](README.md)
 
-## StatefulSet
+# StatefulSet
 
 According to Kubernetes documentation, a StatefulSet is the workload API object used to manage stateful applications. Pods deployed using a StatefulSet use the same Pod specification. How this is different than a Deployment is that a StatefulSet considers each Pod as unique and provides ordering to Pod deployment. 
 
@@ -35,7 +36,7 @@ StatefulSets are valuable for applications that require one or more of the follo
 * Ordered, graceful deployment and scaling.
 * Ordered, automated rolling updates.
 
-### Limitations
+## Limitations
 
 StatefulSets currently have some limitations
 * The storage for a given Pod must either be provisioned by a PersistentVolume Provisioner based on the requested storage class, or pre-provisioned by an admin.
@@ -44,7 +45,7 @@ StatefulSets currently have some limitations
 * StatefulSets do not provide any guarantees on the termination of pods when a StatefulSet is deleted. To achieve ordered and graceful termination of the pods in the StatefulSet, it is possible to scale the StatefulSet down to 0 prior to deletion.
 * When using Rolling Updates with the default Pod Management Policy (OrderedReady), it's possible to get into a broken state that requires manual intervention to repair.
 
-### Example
+## Example
 
 The example below demonstrates the components of a StatefulSet:
 

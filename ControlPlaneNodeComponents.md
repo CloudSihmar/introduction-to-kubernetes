@@ -8,17 +8,20 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 **Resources:**
 
-> - Kubernetes in Action - Marko Lukša 
 > - Kubernetes Documentation - https://kubernetes.io/docs/home/
-> - Kubernetes Fundamentals (LFS258) - The Linux Foundation
+> - Kubernetes in Action - Marko Lukša - Manning Publications
+> - Kubernetes Fundamentals (LFS258) - Timothy Serewicz - The Linux Foundation
+> - Kubernetes for Developers (LFD259) - Timothy Serewicz - The Linux Foundation
+> - Certified Kubernetes Application Developer (CKAD) Study Guide - Benjamin Muschko - O'Reilly Media
+> - Getting Started with Kubernetes - Sander van Vugt - Addison-Wesley Professional
 
-**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial purposes. If you find this document useful in any means please support the original authors for ethical reasons.** 
+**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial intentions. If you find this document useful in any means please support the original authors for ethical reasons.** 
 
 [Return to the README page.](README.md)
 
 [Return to the Kubernetes Components page.](KubernetesComponents.md)
 
-## Control Plane Node Components
+# Control Plane Node Components
 
 The Control Plane is what controls the cluster and makes it function. It consists of multiple components that can run on a single master node or be split across multiple nodes and replicated to ensure high availability. The container orchestration layer that exposes the API and interfaces to define, deploy, and manage the lifecycle of containers.
 
@@ -32,7 +35,7 @@ When building a cluster using kubeadm, the kubelet process is managed by systemd
 
 <img src=".\images\p2_kubernetes_components.jpg"/>
 
-### kube-apiserver
+## kube-apiserver
 
 The Kubernetes API server is the central component used by all other components and by clients, such as kubectl. It provides a CRUD (Create, Read, Update, Delete) interface for querying and modifying the cluster state over a RESTful API. It stores that state in etcd.
 
@@ -44,7 +47,7 @@ The kube-apiserver is central to the operation of the Kubernetes cluster. All c
 
 Starting as a beta feature in v1.18, the Konnectivity service provides the ability to separate user-initiated traffic from server-initiated traffic. Until these features are developed, most network plugins commingle the traffic, which has performance, capacity, and security ramifications.
 
-### kube-scheduler
+## kube-scheduler
 
 Scheduler wait for newly created pods through the API server’s watch mechanism and assign a node to each new pod that doesn’t already have the node set.
 
@@ -58,7 +61,7 @@ There are several ways you can affect the algorithm, or a custom scheduler could
 
 One of the first settings referenced is if the Pod can be deployed within the current quota restrictions. If so, then the taints and tolerations, and labels of the Pods are used along with the metadata of the nodes to determine the proper placement. Some is done as an admission controller in the kube-apiserver, the rest is done by the chosen scheduler.
 
-### etcd
+## etcd
 
 Consistent and highly-available key value data store that persistently stores the cluster configuration.
 
@@ -70,13 +73,13 @@ There is a Leader database along with possible followers, or non-voting Learners
 
 While most Kubernetes objects are designed to be decoupled, a transient microservice which can be terminated without much concern etcd is the exception. As it is, the persistent state of the entire cluster must be protected and secured. Before upgrades or maintenance, you should plan on backing up etcd. The etcdctl command allows for snapshot save and snapshot restore.
 
-### kube-controller-manager
+## kube-controller-manager
 
 Performs cluster-level functions, such as replicating components, keeping track of worker nodes, handling node failures, and so on.
 
 The kube-controller-manager is a core control loop daemon which interacts with the kube-apiserver to determine the state of the cluster. If the state does not match, the manager will contact the necessary controller to match the desired state. There are several operators in use, such as endpoints, namespace, and replication. The full list has expanded as Kubernetes has matured. 
 
-### Controllers running inside Controller Manager
+## Controllers running inside Controller Manager
 
 The single Controller Manager process currently combines a multitude of controllers performing various reconciliation tasks.
 
@@ -93,12 +96,12 @@ The list of these controllers includes the:
 - PersistentVolume controller
 - Others
 
-### cloud-controller-manager
+## cloud-controller-manager
 
 A Kubernetes control plane component that embeds cloud-specific control logic. The cloud controller manager lets you link your cluster into your cloud provider's API, and separates out the components that interact with that cloud platform from components that only interact with your cluster.
 
 Remaining in beta since v1.11, the cloud-controller-manager (ccm) interacts with agents outside of the cloud. It handles tasks once handled by kube-controller-manager. This allows faster changes without altering the core Kubernetes control process. Each kubelet must use the --cloud-provider-external settings passed to the binary. You can also develop your own ccm, which can be deployed as a daemonset as an in-tree deployment or as a free-standing out-of-tree installation. The cloud-controller-manager is an optional agent which takes a few steps to enable.
 
-### kube-dns
+## kube-dns
 
 Depending on which network plugin has been chosen, there may be various pods to control network traffic. To handle DNS queries, Kubernetes service discovery, and other functions, the CoreDNS server has replaced kube-dns. Using chains of plugins, one of many provided or custom written, the server is easily extensible.

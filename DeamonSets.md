@@ -9,16 +9,17 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 **Resources:**
 
 > - Kubernetes Documentation - https://kubernetes.io/docs/home/
-> - Kubernetes in Action - Marko Lukša 
-> - Kubernetes Fundamentals (LFS258) - The Linux Foundation
-> - Kubernetes for Developers (LFD259) - The Linux Foundation
+> - Kubernetes in Action - Marko Lukša - Manning Publications
+> - Kubernetes Fundamentals (LFS258) - Timothy Serewicz - The Linux Foundation
+> - Kubernetes for Developers (LFD259) - Timothy Serewicz - The Linux Foundation
+> - Certified Kubernetes Application Developer (CKAD) Study Guide - Benjamin Muschko - O'Reilly Media
 > - Getting Started with Kubernetes - Sander van Vugt - Addison-Wesley Professional
 
-**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial purposes. If you find this document useful in any means please support the original authors for ethical reasons.** 
+**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial intentions. If you find this document useful in any means please support the original authors for ethical reasons.** 
 
 [Return to the README page.](README.md)
 
-## DaemonSets
+# DaemonSets
 
 Certain cases exist when you want a pod to run on each and every node in the cluster and each node needs to run exactly one instance of the pod.
 
@@ -42,7 +43,7 @@ $ kubectl get daemonsets
 $ kubectl get ds
 ```
 
-### Using DaemonSets
+## Using DaemonSets
 
 A newer object to work with is the DaemonSet. This controller ensures that a single pod exists on each node in the cluster. Every Pod uses the same image. Should a new node be added, the DaemonSet controller will deploy a new Pod on your behalf. Should a node be removed, the controller will delete the Pod also. 
 
@@ -52,7 +53,7 @@ Use '**kind: DaemonSet**'.​
 
 There are ways of effecting the kube-apischeduler such that some nodes will not run a DaemonSet.
 
-### Creating DaemonSets
+## Creating DaemonSets
 
 You can describe a DaemonSet in a YAML file. For example, the daemonset.yaml file below describes a DaemonSet that runs the fluentd-elasticsearch Docker image:
 

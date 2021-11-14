@@ -9,16 +9,17 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 **Resources:**
 
 > - Kubernetes Documentation - https://kubernetes.io/docs/home/
-> - Kubernetes in Action - Marko Lukša 
-> - Kubernetes Fundamentals (LFS258) - The Linux Foundation
-> - Kubernetes for Developers (LFD259) - The Linux Foundation
+> - Kubernetes in Action - Marko Lukša - Manning Publications
+> - Kubernetes Fundamentals (LFS258) - Timothy Serewicz - The Linux Foundation
+> - Kubernetes for Developers (LFD259) - Timothy Serewicz - The Linux Foundation
+> - Certified Kubernetes Application Developer (CKAD) Study Guide - Benjamin Muschko - O'Reilly Media
 > - Getting Started with Kubernetes - Sander van Vugt - Addison-Wesley Professional
 
-**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial purposes. If you find this document useful in any means please support the original authors for ethical reasons.** 
+**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial intentions. If you find this document useful in any means please support the original authors for ethical reasons.** 
 
 [Return to the README page.](README.md)
 
-## Services
+# Services
 
 Pods need a way of finding other pods if they want to consume the services they provide. Configuring each client application by specifying the exact IP address or hostname of the server providing the service in the client’s configuration files will not work in Kubernetes because:
 
@@ -49,13 +50,13 @@ A service, as well as kubectl, uses a selector in order to know which objects to
 - **equality-based**: Filters by label keys and their values. Three operators can be used, such as =, ==, and !=. If multiple values or keys are used, all must be included for a match.
 - **set-based**: Filters according to a set of values. The operators are in, notin, and exists. For example, the use of status notin (dev, test, maint) would select resources with the key of status which did not have a value of dev, test, nor maint.
 
-### Creating Services
+## Creating Services
 
 Service is created by posting a JSON or YAML descriptor to the Kubernetes API server.
 
 <img src=".\images\p3_service_yamlexample.jpg"/>
 
-### Exposing multiple ports in the same service
+## Exposing multiple ports in the same service
 
 Services can support multiple ports. For example, if your pods listened on two ports, 8080 for HTTP and 8443 for HTTPS. You could use a single service to forward both port 80 and 443 to the pod’s ports 8080 and 8443. You don’t need to create two different services in such cases. Using a single, multi-port service exposes all the service’s ports through a single cluster IP.
 
@@ -71,7 +72,7 @@ You can give a name to each pod’s port and refer to it by name in the service 
 
 <img src=".\images\p3_service_namedports_service.jpg"/>
 
-### Discovering Services
+## Discovering Services
 
 By creating a service, you now have a single and stable IP address and port that you can hit to access your pods. This address will remain unchanged throughout the whole lifetime of the service. Pods behind this service may come and go, their IPs may change, their number can go up or down, but they’ll always be accessible through the service’s single and constant IP address.
 
@@ -81,11 +82,11 @@ But how do the client pods know the IP and port of a service?
 
 * Discovering services through DNS: The kube-system namespace includes a pod for DNS and a corresponding service with the name kube-dns. The pod runs a DNS server, which all other pods running in the cluster are automatically configured to use (Kubernetes does that by modifying each container’s /etc/resolv.conf file). Any DNS query performed by a process running in a pod will be handled by Kubernetes’ own DNS server, which knows all the services running in your system. Each service gets a DNS entry in the internal DNS server, and client pods that know the name of the service can access it through its fully qualified domain name (FQDN) instead of resorting to environment variables.
 
-### Connecting to services living outside the cluster
+## Connecting to services living outside the cluster
 
 Services don’t link to pods directly. Instead, a resource sits in between—the Endpoints resource. An Endpoints resource is a list of IP addresses and ports exposing a service. Pod selector defined in the service spec is not used directly when redirecting incoming connections. Instead, the selector is used to build a list of IPs and ports, which is then stored in the Endpoints resource. When a client connects to a service, the service proxy selects one of those IP and port pairs and redirects the incoming connection to the server listening at that location. 
 
-### Exposing services to external clients
+## Exposing services to external clients
 
 Services can be made accessible externally by:
 
@@ -127,7 +128,7 @@ You can map multiple paths on the same host to different services.
 
 You can use an Ingress to map to different services based on the host in the HTTP request instead of (only) the path
 
-### Pod Readiness Probe
+## Pod Readiness Probe
 
 Pods are included as endpoints of a service if their labels match the service’s pod selector. As soon as a new pod with proper labels is created, it becomes part of the service and requests start to be redirected to the pod. But what if the pod isn’t ready to start serving requests immediately?
 
@@ -141,7 +142,7 @@ Three types of readiness probes exist:
 * An HTTP GET probe, which sends an HTTP GET request to the container and the HTTP status code of the response determines whether the container is ready or not.
 * A TCP Socket probe, which opens a TCP connection to a specified port of the container. If the connection is established, the container is considered ready.
 
-### Headless Services
+## Headless Services
 
 Services can be used to provide a stable IP address allowing clients to connect to pods backing the services. Each connection to the service is forwarded to one randomly selected backing pod. But what if the client needs to connect to all of those pods? What if the backing pods themselves need to each connect to all the other backing pods? Connecting through the service clearly isn’t the way to do this.
 
@@ -149,7 +150,7 @@ For a client to connect to all pods, it needs to figure out the IP of each indiv
 
 **When you perform a DNS lookup for a service, the DNS server returns a single IP—the service’s cluster IP. But if you tell Kubernetes you don’t need a cluster IP for your service (you do this by setting the clusterIP field to None in the service specification), the DNS server will return the pod IPs instead of the single service IP.**
 
-### Troubleshooting services
+## Troubleshooting services
 
 When you’re unable to access your pods through the service, you should start by going through the following list:
 
@@ -161,3 +162,4 @@ When you’re unable to access your pods through the service, you should start b
 * Check whether you’re connecting to the port exposed by the service and not the target port.
 * Try connecting to the pod IP directly to confirm your pod is accepting connections on the correct port.
 * If you can’t even access your app through the pod’s IP, make sure your app isn’t only binding to localhost.
+

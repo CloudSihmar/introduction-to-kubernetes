@@ -9,12 +9,15 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 **Resources:**
 
 > - Kubernetes Documentation - https://kubernetes.io/docs/home/
-> - Kubernetes in Action - Marko Lukša 
-> - Kubernetes Fundamentals (LFS258) - The Linux Foundation
-> - Kubernetes for Developers (LFD259) - The Linux Foundation
+> - Kubernetes in Action - Marko Lukša - Manning Publications
+> - Kubernetes Fundamentals (LFS258) - Timothy Serewicz - The Linux Foundation
+> - Kubernetes for Developers (LFD259) - Timothy Serewicz - The Linux Foundation
+> - Certified Kubernetes Application Developer (CKAD) Study Guide - Benjamin Muschko - O'Reilly Media
 > - Getting Started with Kubernetes - Sander van Vugt - Addison-Wesley Professional
 
-**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial purposes. If you find this document useful in any means please support the original authors for ethical reasons.** 
+**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial intentions. If you find this document useful in any means please support the original authors for ethical reasons.** 
+
+[Return to the README page.](README.md)
 
 # Bootstrap Kubernetes
 

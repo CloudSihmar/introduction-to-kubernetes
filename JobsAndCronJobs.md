@@ -9,16 +9,17 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 **Resources:**
 
 > - Kubernetes Documentation - https://kubernetes.io/docs/home/
-> - Kubernetes in Action - Marko Lukša 
-> - Kubernetes Fundamentals (LFS258) - The Linux Foundation
-> - Kubernetes for Developers (LFD259) - The Linux Foundation
+> - Kubernetes in Action - Marko Lukša - Manning Publications
+> - Kubernetes Fundamentals (LFS258) - Timothy Serewicz - The Linux Foundation
+> - Kubernetes for Developers (LFD259) - Timothy Serewicz - The Linux Foundation
+> - Certified Kubernetes Application Developer (CKAD) Study Guide - Benjamin Muschko - O'Reilly Media
 > - Getting Started with Kubernetes - Sander van Vugt - Addison-Wesley Professional
 
-**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial purposes. If you find this document useful in any means please support the original authors for ethical reasons.** 
+**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial intentions. If you find this document useful in any means please support the original authors for ethical reasons.** 
 
 [Return to the README page.](README.md)
 
-## Jobs
+# Jobs
 
 Just as we may need to redesign our applications to be decoupled, we may also consider that microservices may not need to run all the time. The use of Jobs and CronJobs can further assist with implementing decoupled and transient microservices.
 
@@ -42,7 +43,8 @@ In the event of a failure of the process itself (when the process returns an err
     * Scale a Job
 * Limit the time allowed for a Job pod to complete
 
-### Creating Jobs
+## Creating Jobs
+
 You can define a Job object via yaml file. Here is an example Job config. It computes π to 2000 places and prints it out. It takes around 10s to complete.
 
 ```yaml
@@ -63,13 +65,15 @@ spec:
 ```shell
 kubectl apply -f job.yaml
 ```
-## CronJobs
+
+# CronJobs
 
 Job resources run their pods immediately when you create the Job resource. But many batch jobs need to be run at a specific time in the future or repeatedly in the specified interval. In Linux- and UNIX-like operating systems, these jobs are better known as cron jobs. Kubernetes supports them, too. A CronJob creates Jobs on a repeating schedule.
 
 A cron job in Kubernetes is configured by creating a CronJob resource. At the configured time, Kubernetes will create a Job resource according to the Job template configured in the CronJob object. When the Job resource is created, one or more pod replicas will be created and started according to the Job’s pod template.
 
 This example CronJob manifest prints the current time and a hello message every minute:
+
 ```yaml
 apiVersion: batch/v1
 kind: CronJob

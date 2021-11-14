@@ -8,17 +8,20 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 **Resources:**
 
-> - Kubernetes in Action - Marko Lukša 
 > - Kubernetes Documentation - https://kubernetes.io/docs/home/
-> - Kubernetes Fundamentals (LFS258) - The Linux Foundation
+> - Kubernetes in Action - Marko Lukša - Manning Publications
+> - Kubernetes Fundamentals (LFS258) - Timothy Serewicz - The Linux Foundation
+> - Kubernetes for Developers (LFD259) - Timothy Serewicz - The Linux Foundation
+> - Certified Kubernetes Application Developer (CKAD) Study Guide - Benjamin Muschko - O'Reilly Media
+> - Getting Started with Kubernetes - Sander van Vugt - Addison-Wesley Professional
 
-**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial purposes. If you find this document useful in any means please support the original authors for ethical reasons.** 
+**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial intentions. If you find this document useful in any means please support the original authors for ethical reasons.** 
 
 [Return to the README page.](README.md)
 
 [Return to the Kubernetes Components page.](KubernetesComponents.md)
 
-## Worker Node Components
+# Worker Node Components
 
 All nodes run the kubelet and kube-proxy, as well as the container engine, such as Docker or cri-o, among several options. Other management daemons are deployed to watch these agents or provide services not yet included with Kubernetes.
 
@@ -38,7 +41,7 @@ Cluster-wide metrics is another area with limited functionality. The metrics-ser
 
 <img src=".\images\p2_kubernetes_components.jpg"/>
 
-### kubelet
+## kubelet
 
 The Kubelet is the component responsible for everything running on a worker node. Its initial job is to register the node it’s running on by creating a Node resource in the API server. Then it needs to continuously monitor the API server for Pods that have been scheduled to the node, and start the pod’s containers. It does this by telling the configured container runtime (which is Docker, CoreOS’ rkt, or something else) to run a container from a specific container image. The Kubelet then constantly monitors running containers and reports their status, events, and resource consumption to the API server.
 
@@ -56,11 +59,11 @@ Should a Pod require access to storage, Secrets or ConfigMaps, the kubelet will 
 
 Kubelet calls other components such as the Topology Manager, which uses hints from other components to configure topology-aware resource NUMA assignments such as for CPU and hardware accelerators. As an alpha feature, it is not enabled by default.
 
-### kube-proxy
+## kube-proxy
 
 kube-proxy is a network proxy that runs on each node in the cluster. It maintains network rules on nodes. These network rules allow network communication to your Pods from network sessions inside or outside of your cluster.
 
-### Container Run Time
+## Container Run Time
 
 The container runtime is the software that is responsible for running containers.
 

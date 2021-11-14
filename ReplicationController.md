@@ -9,16 +9,17 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 **Resources:**
 
 > - Kubernetes Documentation - https://kubernetes.io/docs/home/
-> - Kubernetes in Action - Marko Lukša 
-> - Kubernetes Fundamentals (LFS258) - The Linux Foundation
-> - Kubernetes for Developers (LFD259) - The Linux Foundation
+> - Kubernetes in Action - Marko Lukša - Manning Publications
+> - Kubernetes Fundamentals (LFS258) - Timothy Serewicz - The Linux Foundation
+> - Kubernetes for Developers (LFD259) - Timothy Serewicz - The Linux Foundation
+> - Certified Kubernetes Application Developer (CKAD) Study Guide - Benjamin Muschko - O'Reilly Media
 > - Getting Started with Kubernetes - Sander van Vugt - Addison-Wesley Professional
 
-**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial purposes. If you find this document useful in any means please support the original authors for ethical reasons.** 
+**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial intentions. If you find this document useful in any means please support the original authors for ethical reasons.** 
 
 [Return to the README page.](README.md)
 
-## ReplicationController
+# ReplicationController
 
 In real-world use cases, you want your deployments to stay up and running automatically and remain healthy without any manual intervention. To do this, you almost never create pods directly. Instead, you create other types of resources to create and manage the actual pods.
 
@@ -40,7 +41,7 @@ ReplicationController provides the following features:
 
     > A pod instance is never relocated to another node. Instead, the Replication-Controller creates a completely new pod instance that has no relation to the instance it’s replacing.
 
-### Creating a ReplicationController
+## Creating a ReplicationController
 
 ReplicationController is created by posting a JSON or YAML descriptor to the Kubernetes API server.
 
@@ -74,13 +75,13 @@ kubectl apply -f replication.yaml
 
 > Don’t specify a pod selector when defining a ReplicationController. Let Kubernetes extract it from the pod template. This will keep your YAML shorter and simpler.
 
-### Responding Pod/Node Failures
+## Responding Pod/Node Failures
 
 The controller responds to the deletion of a pod by creating a new replacement pod. Technically, it isn’t responding to the deletion itself, but the resulting state—the inadequate number of pods.
 
 In the non-Kubernetes world, If a node fails, the ops team would need to migrate the applications running on that node to other machines manually. Kubernetes, on the other hand, does that automatically. Soon after the ReplicationController detects that its pods are down, it will spin up new pods to replace them.
 
-### Moving pods in and out of the scope of a ReplicationController
+## Moving pods in and out of the scope of a ReplicationController
 
 ReplicationController manages pods that match its label selector. By changing a pod’s labels, it can be removed from or added to the scope of a ReplicationController. It can even be moved from one ReplicationController to another.
 
@@ -100,15 +101,16 @@ You need to either remove matching label(s) or change its value to move the pod 
 
 <img src=".\images\p3_replicationcontroller_change_pod_template.jpg"/>
 
-### Horizontally scaling pods
+## Horizontally scaling pods
+
 Scaling the number of pods up or down is executed by changing the value of the replicas field in the ReplicationController resource. After the change, the Replication-Controller will either delete some existing pods (when scaling down) or create additional pods (when scaling up).
 
 * Edit yaml file and apply new configuration: kubectl apply -f replication-set.yaml
 
 * kubectl scale rc kubia --replicas=6
 
-### Deleting a ReplicationController
+## Deleting a ReplicationController
 
 When you delete a ReplicationController through kubectl delete, the pods are also deleted. 
 
- pods created by a ReplicationController aren’t an integral part of the ReplicationController, and are only managed by it, you can delete only the ReplicationController and leave the pods running by using --cascade=false flag.
+pods created by a ReplicationController aren’t an integral part of the ReplicationController, and are only managed by it, you can delete only the ReplicationController and leave the pods running by using --cascade=false flag.

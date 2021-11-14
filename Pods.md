@@ -9,16 +9,17 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 **Resources:**
 
 > - Kubernetes Documentation - https://kubernetes.io/docs/home/
-> - Kubernetes in Action - Marko Lukša 
-> - Kubernetes Fundamentals (LFS258) - The Linux Foundation
-> - Kubernetes for Developers (LFD259) - The Linux Foundation
+> - Kubernetes in Action - Marko Lukša - Manning Publications
+> - Kubernetes Fundamentals (LFS258) - Timothy Serewicz - The Linux Foundation
+> - Kubernetes for Developers (LFD259) - Timothy Serewicz - The Linux Foundation
+> - Certified Kubernetes Application Developer (CKAD) Study Guide - Benjamin Muschko - O'Reilly Media
 > - Getting Started with Kubernetes - Sander van Vugt - Addison-Wesley Professional
 
-**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial purposes. If you find this document useful in any means please support the original authors for ethical reasons.** 
+**LEGAL NOTICE: This document is created for educational purposes, and it can not be used for any commercial intentions. If you find this document useful in any means please support the original authors for ethical reasons.** 
 
 [Return to the README page.](README.md)
 
-## Pods
+# Pods
 
 The whole point of Kubernetes is to orchestrate the lifecycle of a container. We do not interact with particular containers. Instead, the smallest unit we can work with is a Pod. Some would say a pod of whales or peas-in-a-pod. Due to shared resources, the design of a Pod typically follows a one-process-per-container architecture.
 
@@ -71,7 +72,7 @@ A container shouldn’t run multiple processes. A pod shouldn’t contain multip
 
 Usually you don't need to create Pods directly, even singleton Pods. Instead, create them using workload resources such as Deployment or Job.
 
-### Pod Life Cycle Phases
+## Pod Life Cycle Phases
 
 Because Kubernetes is a state engine with asynchronous control loops, it’s possible that the status of the Pod doesn’t show a Running status right away when listing the Pods. It usually takes a couple of seconds to retrieve the image and start the container. Upon Pod creation, the object goes through several life cycle phases.
 
@@ -85,7 +86,7 @@ Understanding the implications of each phase is important as it gives you an ide
 - **Failed**: Containers in the Pod terminated, as least one failed with an error.
 - **Unknown**: The state of Pod could not be obtained.
 
-### Creating Pods
+## Creating Pods
 
 Pods and other objects can be created in several ways. They can be created by using a generator, which. historically, has changed with each release. 
 
@@ -131,7 +132,7 @@ spec:
 
 Other objects will be created by operators/watch-loops to ensure the specifications and current status are the same. 
 
-### Containers
+## Containers
 
 While Kubernetes orchestration does not allow direct manipulation on a container level, we can manage the resources containers are allowed to consume. 
 
@@ -151,7 +152,7 @@ Another way to manage resource usage of the containers is by creating a Resource
 
 A beta feature in v1.12 uses the scopeSelector field in the quota spec to run a pod at a specific priority if it has the appropriate priorityClassName in its pod spec.
 
-### Rendering Pod Details
+## Rendering Pod Details
 
 The rendered table produced by the get command provides high-level information about a Pod. But what if you needed to have a deeper look at the details? The describe command can help:
 
@@ -167,7 +168,7 @@ There’s a way to be more specific about the information you want to render. Yo
 $ kubectl describe pods hazelcast | grep Image:
 ```
 
-### Accessing Logs of a Pod
+## Accessing Logs of a Pod
 
 As application developers, we know very well what to expect in the log files produced by the application we implemented. Runtime failures may occur when operating an application in a container. The logs command downloads the log output of a container. The following output indicates that the Hazelcast server started up successfully:
 
@@ -179,7 +180,7 @@ It’s very likely that more log entries will be produced as soon as the contain
 
 Kubernetes tries to restart a container under certain conditions, such as if the image cannot be resolved on the first try. **Upon a container restart, you’ll not have access to the logs of the previous container anymore; the logs command only renders the logs for the current container. However, you can still get back to the logs of the previous container by adding the -p command line option.** You may want to use the option to identify the root cause that triggered a container restart.
 
-### Running Commands in a Container
+## Running Commands in a Container
 
 Part of the testing may be to execute commands within the Pod. What commands are available depend on what was included in the base environment when the image was created. In keeping to a decoupled and lean design, it's possible that there is no shell, or that the Bourne shell is available instead of bash. After testing, you may want to revisit the build and add resources necessary for testing and production.
 
@@ -204,7 +205,7 @@ It’s also possible to just execute a single command inside of a container. Say
 $ kubectl exec hazelcast -- env
 ```
 
-### Organizing Pods with Labels
+## Organizing Pods with Labels
 
 With microservices architectures, the number of deployed microservices can easily reach high values. Those components will probably be replicated (multiple copies of the same component will be deployed) and multiple versions or releases (stable, beta, canary, and so on) will run concurrently. This can lead to hundreds of pods in the system. Without a mechanism for organizing them, you end up with a big, incomprehensible mess.
 
@@ -216,7 +217,7 @@ Organizing pods and all other Kubernetes objects is done through labels.
 
 Labels go hand in hand with label selectors. Label selectors allow you to select a subset of pods tagged with certain labels and perform an operation on those pods. A label selector is a criterion, which filters resources based on whether they include a certain label with a certain value.
 
-### Using labels and selectors to constrain pod scheduling
+## Using labels and selectors to constrain pod scheduling
 
 Labels and label selectors can be used to constrain pod scheduling. As an example, let one of the nodes in your cluster contains a GPU to be used for general-purpose GPU computing. You add the label gpu=true to the nodes showing this feature.
 
@@ -236,7 +237,7 @@ spec:
 ```
 nodeSelector tells Kubernetes to deploy this pod only to nodes containing the gpu=true label. 
 
-### Multi-Container Pod
+## Multi-Container Pod
 
 The idea of multiple containers in a Pod goes against the architectural idea of decoupling as much as possible. One could run an entire operating system inside a container, but would lose much of the granular scalability Kubernetes is capable of. But there are certain needs in which a second or third co-located container makes sense. By adding a second container, each container can still be optimized and developed independently, and both can scale and be repurposed to best meet the needs of the workload.
 
@@ -254,7 +255,7 @@ Especially to beginners of Kubernetes, how to appropriately design a Pod isn’t
 
 So what’s the point of running multiple containers in a Pod then? There are two common use cases. Sometimes, you’ll want to initialize your Pod by executing setup scripts, commands, or any other kind of preconfiguration procedure before the application container should start. This logic runs in a so-called init container. Other times, you’ll want to provide helper functionality that runs alongside the application container to avoid the need to bake the logic into application code. For example, you may want to massage the log output produced by the application. Containers running helper logic are called sidecars.
 
-### Multi-Container Pod Terminology
+## Multi-Container Pod Terminology
 
 Real-world scenarios call for running multiple containers inside of a Pod. An init container helps with setting the stage for the main application container by executing initializing logic. Once the initialized logic has been processed, the container will be terminated. The main application container only starts if the init container ran through its functionality successfully.
 
@@ -262,7 +263,7 @@ Real-world scenarios call for running multiple containers inside of a Pod. An in
 
 The adapter pattern helps with “translating” data produced by the application so that it becomes consumable by third-party services. The ambassador pattern acts as a proxy for the application container when communicating with external services by abstracting the “how.”
 
-#### Init Containers
+### Init Containers
 
 Init containers provide initialization logic concerns to be run before the main application even starts. 
 
@@ -352,7 +353,7 @@ $ kubectl logs business-app -c configurer
 Configuring application...
 ```
 
-#### The Sidecar Pattern
+### The Sidecar Pattern
 
 The lifecycle of an init container looks as follows: it starts up, runs its logic, then terminates once the work has been done. Init containers are not meant to keep running over a longer period of time. There are scenarios that call for a different usage pattern. For example, you may want to create a Pod that runs multiple containers continuously alongside one another.
 
@@ -434,7 +435,7 @@ $ kubectl logs webserver -c sidecar
 Error discovered!
 ```
 
-#### The Adapter Pattern
+### The Adapter Pattern
 
 The basic purpose of an adapter container is to modify data, either on ingress or egress, to match some other need. Perhaps, an existing enterprise-wide monitoring tools has particular data format needs. An adapter would be an efficient way to standardize the output of the main container to be ingested by the monitoring tool, without having to modify the monitor or the containerized application. An adapter container transforms multiple applications to singular view.
 
@@ -514,7 +515,7 @@ total 40
  4.0K	/root
 ```
 
-#### The Ambassador Pattern
+### The Ambassador Pattern
 
 The ambassador pattern provides a proxy for communicating with external services.
 
@@ -621,9 +622,9 @@ It allows for access to the outside world without having to implement a service 
 
 This type of secondary container would be used to communicate with outside resources, often outside the cluster. Using a proxy, like Envoy or other, you can embed a proxy instead of using one provided by the cluster. It is helpful if you are unsure of the cluster configuration.
 
-### readinessProbe, livenessProbe, and startupProbe
+## Observability
 
-#### readinessProbe
+### readinessProbe
 
 Oftentimes, our application may have to initialize or be configured prior to being ready to accept traffic. As we scale up our application, we may have containers in various states of creation. Rather than communicate with a client prior to being fully ready, we can use a readinessProbe. The container will not accept traffic until the probe returns a healthy state.
 
@@ -633,17 +634,17 @@ Another type of probe uses an HTTP GET request (httpGet). Using a defined heade
 
 The TCP Socket probe (tcpSocket) will attempt to open a socket on a predetermined port, and keep trying based on periodSeconds. Once the port can be opened, the container is considered healthy.
 
-#### livenessProbe
+### livenessProbe
 
 Just as we want to wait for a container to be ready for traffic, we also want to make sure it stays in a healthy state. Some applications may not have built-in checking, so we can use livenessProbes to continually check the health of a container. If the container is found to fail a probe, it is terminated. If under a controller, a replacement would be spawned.
 
-#### startupProbe
+### startupProbe
 
 Becoming beta recently, we can also use the startupProbe. This probe is useful for testing an application which takes a long time to start.
 
 If kubelet uses a startupProbe, it will disable liveness and readiness checks until the application passes the test. The duration until the container is considered failed is failureThreshold times periodSeconds. For example, if your periodSeconds was set to five seconds, and your failureThreshold was set to ten, kubelet would check the application every five seconds until it succeeds, or is considered failed after a total of 50 seconds. If you set the periodSeconds to 60 seconds, kubelet would keep testing for 300 seconds, or five minutes, before considering the container failed.
 
-### Testing
+## Testing
 
 With the decoupled and transient nature and great flexibility, there are many possible combinations of deployments. Each deployment would have its own method for testing. No matter which technology is implemented, the goal is the end user getting what is expected. Building a test suite for your newly deployed application will help speed up the development process and limit issues with the Kubernetes integration.
 
@@ -669,7 +670,7 @@ A different pod may be configured to show lots of log output, such as the etcd p
 $ kubectl -n kube-system logs etcd-master    ##<-- Use Tab to complete for your etcd pod
 ```
 
-### Declaring Environment Variables
+## Declaring Environment Variables
 
 Applications need to expose a way to make their runtime behavior configurable. For example, you may want to inject the URL to an external web service or declare the username for a database connection. Environment variables are a common option to provide this runtime configuration.
 
@@ -693,7 +694,7 @@ spec:
       value: '1.5.3'
 ```
 
-### Defining a Command with Arguments
+## Defining a Command with Arguments
 
 Many container images already define an **ENTRYPOINT** or **CMD** instruction. The command assigned to the instruction is automatically executed as part of the container startup process. For example, the Hazelcast image we used earlier defines the instruction CMD ["/opt/hazelcast/start-hazelcast.sh"].
 
@@ -729,7 +730,7 @@ You can quickly verify if the declared command actually does its job. First, we 
 $ kubectl create -f pod.yaml
 ```
 
-### Removing Pods
+## Removing Pods
 
 Sooner or later you’ll want to delete a Pod. You made a configuration mistake and want to start the question from scratch:
 
