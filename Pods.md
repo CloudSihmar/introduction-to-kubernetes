@@ -32,6 +32,10 @@ Pods are the smallest deployable units of computing that you can create and mana
 
 A Pod is a group of one or more containers, with shared storage and network resources, and a specification for how to run the containers.
 
+CRI interaction with Docker images:
+
+<img src=".\images\CRI-interaction-with-Docker-images.png"/>
+
 In Kubernetes, instead of deploying containers individually, you always deploy and operate on a pod of containers. It’s common for pods to contain only a single container. 
 
     When a pod contains multiple containers, all of them are always run on a single worker node—it never spans multiple worker nodes. 
@@ -67,15 +71,31 @@ A container shouldn’t run multiple processes. A pod shouldn’t contain multip
 
 Usually you don't need to create Pods directly, even singleton Pods. Instead, create them using workload resources such as Deployment or Job.
 
+### Pod Life Cycle Phases
+
+Because Kubernetes is a state engine with asynchronous control loops, it’s possible that the status of the Pod doesn’t show a Running status right away when listing the Pods. It usually takes a couple of seconds to retrieve the image and start the container. Upon Pod creation, the object goes through several life cycle phases.
+
+<img src=".\images\Pod-Life-cycle-Phases.png"/>
+
+Understanding the implications of each phase is important as it gives you an idea about the operational status of a Pod.
+
+- **Pending**: The Pod has been accepted by the Kubernetes system, but one or more of the container images has not been created.
+- **Running**: At least one container is still running, or is in the process of starting or restarting.
+- **Succeeded**: All containers in the Pod terminated successfully.
+- **Failed**: Containers in the Pod terminated, as least one failed with an error.
+- **Unknown**: The state of Pod could not be obtained.
+
 ### Creating Pods
 
-Pods and other objects can be created in several ways. They can be created by using a generator, which. historically, has changed with each release:
+Pods and other objects can be created in several ways. They can be created by using a generator, which. historically, has changed with each release. 
+
+The run command is the central entry point for creating Pods imperatively. 
 
 ```shell
 $ kubectl run newpod --image=nginx --generator=run-pod/v1
 ```
 
-Or, they can be created and deleted using properly formatted JSON or YAML files:
+They can be created and deleted using properly formatted JSON or YAML files:
 
 ```shell
 $ kubectl create -f newpod.yaml
@@ -152,6 +172,34 @@ spec:
     command: ['sh', '-c', 'until ls /db/dir ; do sleep 5; done; '] 
 ```
 
+### Rendering Pod Details
+
+The rendered table produced by the get command provides high-level information about a Pod. But what if you needed to have a deeper look at the details? The describe command can help:
+
+```shell
+$ kubectl describe pods hazelcast
+```
+
+The terminal output contains the metadata information of a Pod, the containers it runs and the event log, such as failures when the Pod was scheduled. You can expect the output to be very lengthy.
+
+There’s a way to be more specific about the information you want to render. You can combine the **describe** command with a Unix **grep** command. Say you wanted to identify the image for running in the container:
+
+```shell
+$ kubectl describe pods hazelcast | grep Image:
+```
+
+### Accessing Logs of a Pod
+
+As application developers, we know very well what to expect in the log files produced by the application we implemented. Runtime failures may occur when operating an application in a container. The logs command downloads the log output of a container. The following output indicates that the Hazelcast server started up successfully:
+
+```shell
+$ kubectl logs hazelcast
+```
+
+It’s very likely that more log entries will be produced as soon as the container receives traffic from end users. **You can stream the logs with the command line option -f**. This option is helpful if you want to see logs in real time.
+
+Kubernetes tries to restart a container under certain conditions, such as if the image cannot be resolved on the first try. **Upon a container restart, you’ll not have access to the logs of the previous container anymore; the logs command only renders the logs for the current container. However, you can still get back to the logs of the previous container by adding the -p command line option.** You may want to use the option to identify the root cause that triggered a container restart.
+
 ### Running Commands in a Container
 
 Part of the testing may be to execute commands within the Pod. What commands are available depend on what was included in the base environment when the image was created. In keeping to a decoupled and lean design, it's possible that there is no shell, or that the Bourne shell is available instead of bash. After testing, you may want to revisit the build and add resources necessary for testing and production.
@@ -161,6 +209,20 @@ If you have more than one container, declare which container:
 
 ```shell
 $ kubectl exec -i​t <Pod-Name> 
+```
+
+There are situations that require you to log into the container and explore the file system. Maybe you want to inspect the configuration of your application or debug the current state of your application. You can use the exec command to open a shell in the container to explore it interactively, as follows:
+
+```shell
+$ kubectl exec -it hazelcast -- /bin/sh
+```
+
+Notice that you do not have to provide the resource type. This command only works for a Pod. **The two dashes (--) separate the exec command and its options from the command you want to run inside of the container.**
+
+It’s also possible to just execute a single command inside of a container. Say you wanted to render the environment variables available to containers without having to be logged in. Just remove the interactive flag -it and provide the relevant command after the two dashes:
+
+```shell
+$ kubectl exec hazelcast -- env
 ```
 
 ### Organizing Pods with Labels
@@ -279,7 +341,75 @@ A different pod may be configured to show lots of log output, such as the etcd p
 $ kubectl -n kube-system logs etcd-master    ##<-- Use Tab to complete for your etcd pod
 ```
 
+### Declaring Environment Variables
+
+Applications need to expose a way to make their runtime behavior configurable. For example, you may want to inject the URL to an external web service or declare the username for a database connection. Environment variables are a common option to provide this runtime configuration.
+
+Defining environment variables in a Pod YAML manifest is relatively easy. Add or enhance the section env of a container. **Every environment variable consists of a key-value pair, represented by the attributes name and value. Kubernetes does not enforce or sanitize typical naming conventions for environment variable keys. It’s recommended to follow the standard of using upper-case letters and the underscore character (_) to separate words.**
+
+To illustrate a set of environment variables, have a look at example below. The code snippet describes a Pod that runs a Java-based application using the Spring Boot framework.
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: spring-boot-app
+spec:
+  containers:
+  - image: bmuschko/spring-boot-app:1.5.3
+    name: spring-boot-app
+    env:
+    - name: SPRING_PROFILES_ACTIVE
+      value: prod
+    - name: VERSION
+      value: '1.5.3'
+```
+
+### Defining a Command with Arguments
+
+Many container images already define an **ENTRYPOINT** or **CMD** instruction. The command assigned to the instruction is automatically executed as part of the container startup process. For example, the Hazelcast image we used earlier defines the instruction CMD ["/opt/hazelcast/start-hazelcast.sh"].
+
+**In a Pod definition, you can either redefine the image ENTRYPOINT and CMD instructions or assign a command to execute for the container if hasn’t been specified by the image.** You can provide this information with the help of the command and args attributes for a container. The command attribute overrides the image’s ENTRYPOINT instruction. The args attribute replaces the CMD instruction of an image.
+
+Imagine you wanted to provide a command to an image that doesn’t provide one yet. As usual there are two different approaches, imperatively and declaratively. 
+
+We’ll generate the YAML manifest with the help of the run command. The Pod should use the busybox image and execute a shell command that renders the current date every 10 seconds in an infinite loop:
+
+```shell
+$ kubectl run mypod --image=busybox -o yaml --dry-run=client --restart=Never > pod.yaml -- /bin/sh -c "while true; do date; sleep 10; done"
+```
+
+You could have achieved the same by a combination of the command and args attributes if you were to hand-craft the YAML manifest.
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod
+spec:
+  containers:
+  - command: ["/bin/sh"]
+    args: ["-c", "while true; do date; sleep 10; done"]
+    image: busybox
+    name: mypod
+  restartPolicy: Never
+```
+
+You can quickly verify if the declared command actually does its job. First, we create the Pod instance, then we tail the logs:
+
+```shell
+$ kubectl create -f pod.yaml
+```
+
 ### Removing Pods
+
+Sooner or later you’ll want to delete a Pod. You made a configuration mistake and want to start the question from scratch:
+
+```shell
+$ kubectl delete pod hazelcast
+```
+
+**Keep in mind that Kubernetes tries to delete a Pod gracefully.** This means that the Pod will try to finish active requests to the Pod to avoid unnecessary disruption to the end user. **A graceful deletion operation can take anywhere from 5-30 seconds.**
 
 ```shell
 kubectl delete po pod-name
@@ -289,4 +419,10 @@ kubectl delete po -l label=value
 kubectl delete po --all
 
 kubectl delete ns custom_namespace
+```
+
+An alternative way to delete a Pod is to point the delete command to the YAML manifest you used to create it. The behavior is the same:
+
+```shell
+$ kubectl delete -f pod.yaml
 ```
