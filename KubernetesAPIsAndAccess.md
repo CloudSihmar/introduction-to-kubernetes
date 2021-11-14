@@ -190,26 +190,6 @@ There are currently three APIs which can be applied to set who and what can be q
 
 The use of reconcile allows a check of authorization necessary to create an object from a file. No output indicates the creation would be allowed.
 
-## Using Annotations
-
-Labels are used to work with objects or collections of objects; annotations are not.
-
-Instead, annotations allow for metadata to be included with an object that may be helpful outside of the Kubernetes object interaction. Similar to labels, they are key to value maps. They are also able to hold more information, and more human-readable information than labels.
- 
-Having this kind of metadata can be used to track information such as a timestamp, pointers to related objects from other ecosystems, or even an email from the developer responsible for that object's creation. 
-
-The annotation data could otherwise be held in an exterior database, but that would limit the flexibility of the data. The more this metadata is included, the easier it is to integrate management and deployment tools or shared client libraries. 
-
-For example, to annotate only Pods within a namespace, you can overwrite the annotation, and finally delete it: 
-
-```shell
-$ kubectl annotate pods --all description='Production Pods' -n prod 
-
-$ kubectl annotate --overwrite pod webpod description="Old Production Pods" -n prod 
-
-$ kubectl -n prod annotate pod webpod description-
-```
-
 ## Manage API Resources with kubectl
 
 Kubernetes exposes resources via RESTful API calls, which allows all resources to be managed via HTTP, JSON or even XML, the typical protocol being HTTP. The state of the resources can be changed using standard HTTP verbs (e.g. GET, POST, PATCH, DELETE, etc.).
@@ -240,6 +220,53 @@ https://10.128.0.3:6443/api/v1/namespaces/default/pods/firstpod
 ....
 ```
 
+### Object Management
+
+You can create objects in a Kubernetes cluster in two ways: imperatively or declaratively. The following sections will describe each approach, including their benefits, drawbacks, and use cases.
+
+### Imperative Approach
+
+The imperative method for object creation does not require a manifest definition. You would use the kubectl run or kubectl create command to create an object on the fly. Any configuration needed at runtime is provided by command-line options. The benefit of this approach is the fast turnaround time without the need to wrestle with YAML structures:
+
+```shell
+$ kubectl run frontend --image=nginx --restart=Never --port=80
+
+pod/frontend created
+```
+
+### Declarative Approach
+
+The declarative approach creates objects from a manifest file (in most cases, a YAML file) using the kubectl create or kubectl apply command. The benefit of using the declarative method is reproducibility and improved maintenance, as the file is checked into version control in most cases. The declarative approach is the recommended way to create objects in production environments:
+
+```shell
+$ vim pod.yaml
+
+$ kubectl create -f pod.yaml
+
+pod/frontend created
+```
+
+### Hybrid Approach
+
+Sometimes, you may want to go with a hybrid approach. You can start by using the imperative method to produce a manifest file without actually creating an object. You do so by executing the kubectl run command with the command-line options **'-o yaml'** and **'--dry-run=client'**:
+
+```shell
+$ kubectl run frontend --image=nginx --restart=Never --port=80 -o yaml --dry-run=client > pod.yaml
+
+$ vim pod.yaml
+
+$ kubectl create -f pod.yaml
+
+pod/frontend created
+
+$ kubectl describe pod frontend
+
+Name:         frontend
+Namespace:    default
+Priority:     0
+...
+```
+
 ### Deleting Kubernetes Objects
 
 You might create Kubernetes objects with incorrect configuration, or you may simply want to start over from scratch. By default, Kubernetes tries to delete objects gracefully, which can can take up to 30 seconds. Use the command line option **--grace-period=0** and **--force** to send a SIGKILL signal. 
@@ -248,6 +275,44 @@ The signal will delete a Kubernetes object immediately:
 
 ```shell
 $ kubectl delete pod nginx --grace-period=0 --force
+```
+
+In a work environment, you’ll want to delete objects that are not needed anymore. The delete command offers two options: deleting an object by providing the name or deleting an object by pointing to the YAML manifest that created it:
+
+```shell
+$ kubectl delete pod frontend
+
+pod "frontend" deleted
+
+$ kubectl delete -f pod.yaml
+
+pod "frontend" deleted
+```
+
+### Editing a live object
+
+Say you already created an object and you wanted to make further changes to the live object. You have the option to modify the object in your editor of choice from the terminal using the edit command. After saving the object definition in the editor, Kubernetes will try to reflect those changes in the live object:
+
+```shell
+$ kubectl edit pod frontend
+```
+
+### Replacing a live object
+
+Sometimes, you’ll just want to replace the definition of an existing object declaratively. The replace command overwrites the live configuration with the one from the provided YAML manifest. The YAML manifest you feed into the command must be a complete resource definition as observed with the create command:
+
+```shell
+$ kubectl replace -f pod.yaml
+```
+
+### Updating a live object
+
+Finally, I want to briefly explain the apply command and the main difference to the create command. The create command instantiates a new object. Trying to execute the create command for an existing object will produce an error. The apply command is meant to update an existing object in its entirety or just incrementally. That’s why the provided YAML manifest may be a full definition of an object or a partial definition (e.g., just the number of replicas for a Deployment). Please note that the apply command behaves like the create command if the object doesn’t exist yet, however, the YAML manifest will need to contain a full definition of the object:
+
+```shell
+$ kubectl apply -f pod.yaml
+
+pod/frontend configured
 ```
 
 ## Access from Outside the Cluster

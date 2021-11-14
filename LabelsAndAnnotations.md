@@ -18,7 +18,7 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 [Return to the README page.](README.md)
 
-## Labels
+## Labels and Annotations
 
 ## Using Label Selectors
 
@@ -90,4 +90,24 @@ The nodeSelector: entry in the podspec could use this label to cause a pod to be
        nodeSelector:
          kubernetes.io/hostname: worker
        containers:
+```
+
+## Using Annotations
+
+Labels are used to work with objects or collections of objects; annotations are not.
+
+Instead, annotations allow for metadata to be included with an object that may be helpful outside of the Kubernetes object interaction. Similar to labels, they are key to value maps. They are also able to hold more information, and more human-readable information than labels.
+ 
+Having this kind of metadata can be used to track information such as a timestamp, pointers to related objects from other ecosystems, or even an email from the developer responsible for that object's creation. 
+
+The annotation data could otherwise be held in an exterior database, but that would limit the flexibility of the data. The more this metadata is included, the easier it is to integrate management and deployment tools or shared client libraries. 
+
+For example, to annotate only Pods within a namespace, you can overwrite the annotation, and finally delete it: 
+
+```shell
+$ kubectl annotate pods --all description='Production Pods' -n prod 
+
+$ kubectl annotate --overwrite pod webpod description="Old Production Pods" -n prod 
+
+$ kubectl -n prod annotate pod webpod description-
 ```
