@@ -129,6 +129,10 @@ Kubectl acts as a CLI-based client to interact with the Kubernetes cluster. You 
 All API resources exposed are available via kubectl. 
 To get more information, do '**kubectl help**'.
 
+```shell
+$ kubectl api-resources
+```
+
 Expect the list below to change:
 
 - all
