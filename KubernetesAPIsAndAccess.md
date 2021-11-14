@@ -122,6 +122,8 @@ $ kubectl [command] [TYPE] [NAME] [flags]
 
 <img src=".\images\kubectl-usage-pattern.png"/>
 
+Kubectl acts as a CLI-based client to interact with the Kubernetes cluster. You can use its commands and flags to manage Kubernetes objects.
+
 ## API Resources with kubectl
 
 All API resources exposed are available via kubectl. 

@@ -159,6 +159,8 @@ As we've already mentioned, it is the lowest unit we can manage; it runs the app
 
 ## Kubernetes API Objects
 
+Kubernetes represents its functionality for deploying and operating a cloud-native application with the help of primitives. Each primitive follows a general structure: the API version, the kind, the metadata and the desired state of the resources, also called the spec. Upon creation or modification of the object, the Kubernetes scheduler automatically tries to ensure that the actual state of the object follows the defined specification. Every live object can be inspected, edited, and deleted.
+
 <img src=".\images\kubernetes-api-objects-primitives.png" style="zoom:80%;" />
 
 > - [Kubernetes API Objects](KubernetesAPIObjects.md)
