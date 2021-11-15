@@ -93,6 +93,38 @@ The nodeSelector: entry in the podspec could use this label to cause a pod to be
        containers:
 ```
 
+## Organizing Pods with Labels
+
+With microservices architectures, the number of deployed microservices can easily reach high values. Those components will probably be replicated (multiple copies of the same component will be deployed) and multiple versions or releases (stable, beta, canary, and so on) will run concurrently. This can lead to hundreds of pods in the system. Without a mechanism for organizing them, you end up with a big, incomprehensible mess.
+
+<img src=".\images\p3_uncategorized_pods_example.jpg"/>
+
+Organizing pods and all other Kubernetes objects is done through labels.
+
+<img src=".\images\p3_categorized_pods_example.jpg"/>
+
+Labels go hand in hand with label selectors. Label selectors allow you to select a subset of pods tagged with certain labels and perform an operation on those pods. A label selector is a criterion, which filters resources based on whether they include a certain label with a certain value.
+
+## Using labels and selectors to constrain pod scheduling
+
+Labels and label selectors can be used to constrain pod scheduling. As an example, let one of the nodes in your cluster contains a GPU to be used for general-purpose GPU computing. You add the label gpu=true to the nodes showing this feature.
+
+Now imagine you want to deploy a new pod that needs a GPU to perform its work. To ask the scheduler to only choose among the nodes that provide a GPU, you’ll add a node selector to the pod’s YAML.
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubia-gpu
+spec:
+  nodeSelector:
+    gpu: "true"
+  containers:
+  - name: kubia
+    image: luksa/kubia
+```
+nodeSelector tells Kubernetes to deploy this pod only to nodes containing the gpu=true label. 
+
 ## Using Annotations
 
 Labels are used to work with objects or collections of objects; annotations are not.
