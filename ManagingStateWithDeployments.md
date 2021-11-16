@@ -31,8 +31,6 @@ As a label is arbitrary, you could select all resources used by developers, or b
 
 ## Deployments
 
-ReplicationControllers (RC) ensure that a specified number of pod replicas is running at any one time. ReplicationControllers also give you the ability to perform rolling updates. However, those updates are managed on the client side. This is problematic if the client loses connectivity, and can leave the cluster in an unplanned state. To avoid problems when scaling the ReplicationControllers on the client side, a new resource was introduced in the apps/v1 API group: Deployments. 
-
 Deployments allow server-side updates to pods at a specified rate. They are used for canary and other deployment patterns. Deployments generate ReplicaSets, which offer more selection features than ReplicationControllers, such as matchExpressions. 
 
 ```shell
@@ -68,6 +66,10 @@ A Deployment is a higher-level resource meant for deploying applications and upd
 
 When you create a Deployment, a ReplicaSet resource is created underneath. Replica-Sets replicate and manage pods. When using a Deployment, the actual pods are created and managed by the Deployment’s ReplicaSets, not by the Deployment directly.
 
+ Replication of Pods with a Deployment:
+
+<img src=".\images\replication-pods-deployment.png"/>
+
 ## Object Relationship
 
 Here you can see the relationship between objects from the container, which Kubernetes does not directly manage, up to the deployment.
@@ -85,7 +87,19 @@ The graphic in the lower right shows a deployment. This controller allows us to 
 
 ## Creating a Deployment
 
+Deployments can be created imperatively with the create deployment command. The options you can provide to configure the Deployment are somewhat limited and do not resemble the ones you know from the run command. The following command creates a new Deployment that uses the image nginx:1.14.2 for a single replica:
+
+```shell
+$ kubectl create deployment my-deploy --image=nginx:1.14.2
+
+deployment.apps/my-deploy created
+```
+
+Often, you will find yourself generating and further modifying the YAML manifest. 
+
 A Deployment is composed of a label selector, a desired replica count, a pod template and a deployment strategy that defines how an update should be performed when the Deployment resource is modified.
+
+The selector spec.selector.matchLabels matches on the key-value pair app=nginx with the label defined under the template section.
 
 ```yaml
 apiVersion: apps/v1
@@ -115,9 +129,9 @@ spec:
 kubectl apply -f nginx-deployment.yaml
 ```
 
-## Deployment Details
+## Listing Deployments
 
-In the previous page, we created a new deployment running a particular version of the nginx web server. 
+Once created, a Deployment and all of its corresponding objects can be listed. The following get command lists all Deployments, Pods, and ReplicaSets. If a Pod or ReplicaSet is managed by a Deployment, the name of the object will reflect that connection.
 
 To generate the YAML file of the newly created objects, do:
 
@@ -130,6 +144,8 @@ Sometimes, a JSON output can make it more clear:
 ```shell
 $ kubectl get deployments,rs,pods -o json
 ```
+
+## Deployment Details
 
 Now we will look at the YAML output, which also shows default values not passed to the object when created:
 
@@ -308,153 +324,36 @@ The output above shows what the same deployment were to look like if the number 
 
 **observedGeneration**: Shows how often the deployment has been updated. This information can be used to understand the rollout and rollback situation of the deployment.
 
-## Scaling and Rolling Updates
+## Rendering Deployment Details
 
-The API server allows for the configurations settings to be updated for most values. There are some immutable values, which may be different depending on the version of Kubernetes you have deployed. 
-
-A common update is to change the number of replicas running. If this number is set to zero, there would be no containers, but there would still be a ReplicaSet and Deployment. This is the backend process when a Deployment is deleted.
+You can inspect the details of a Deployment using the describe command. Not only does the output provide information on the number and availability of replicas, it also presents you with the reference to the ReplicaSet. Inspecting the ReplicaSet or the replicated Pods renders references to the parent object managing it:
 
 ```shell
-$ kubectl scale deploy/dev-web --replicas=4
+$ kubectl describe deployment.apps/my-deploy
 
-deployment "dev-web" scaled
+...
+Replicas:               1 desired | 1 updated | 1 total | 1 available | \
+                        0 unavailable
+...
+NewReplicaSet:   my-deploy-8448c488b5 (1/1 replicas created)
+...
 
-$ kubectl get deployments
+$ kubectl describe replicaset.apps/my-deploy-8448c488b5
 
-NAME     READY   UP-TO-DATE  AVAILABLE  AGE
-dev-web  4/4     4           4          20s
-```
-
-Non-immutable values can be edited via a text editor, as well. Use edit to trigger an update. For example, to change the deployed version of the nginx web server to an older version: 
-
-```shell
-$ kubectl edit deployment nginx
 ....
-      containers:
-      - image: nginx:1.8 #<<---Set to an older version 
-        imagePullPolicy: IfNotPresent
-                name: dev-web
+Controlled By:  Deployment/my-deploy
+....
+
+$ kubectl describe pod/my-deploy-8448c488b5-mzx5g
+
+....
+Controlled By:  ReplicaSet/my-deploy-8448c488b5
 ....
 ```
-
-This would trigger a rolling update of the deployment. While the deployment would show an older age, a review of the Pods would show a recent update and older version of the web server application deployed.
-
-### Updating a Deployment
-
-The only thing you need to do is modify the pod template defined in the Deployment resource and Kubernetes will take all the steps necessary to get the actual system state to what’s defined in the resource. Similar to scaling a ReplicationController or ReplicaSet up or down, all you need to do is reference a new image tag in the Deployment’s pod template and leave it to Kubernetes to transform your system so it matches the new desired state.
-
-```shell
-kubectl set image deployment/nginx-deployment nginx=nginx:1.16.1
-```
-
-<b>Deployment Strategies</b>
-
-* RollingUpdate: Default strategy. The RollingUpdate strategy removes old pods one by one, while adding new ones at the same time, keeping the application available throughout the whole process, and ensuring there’s no drop in its capacity to handle requests
-* Recreate: The Recreate strategy causes all old pods to be deleted before the new ones are created. Use this strategy when your application doesn’t support running multiple versions in parallel and requires the old version to be stopped completely before the new one is started. This strategy does involve a short period of time when your app becomes completely unavailable.
-
-## Deployment Rollbacks
-
-Deployments make it easy to roll back to the previously deployed version by telling Kubernetes to undo the last rollout of a Deployment. You can roll back to a specific revision by specifying the revision in the undo command.
-
-Deployment ensures that only a certain number of Pods are down while they are being updated. By default, it ensures that at least 75% of the desired number of Pods are up (25% max unavailable).
-
-Deployment also ensures that only a certain number of Pods are created above the desired number of Pods. By default, it ensures that at most 125% of the desired number of Pods are up (25% max surge).
-
-<img src=".\images\p3_deployments_maxsurge_maxunavailable.jpg"/>
-
-With some of the previous ReplicaSets of a Deployment being kept, you can also roll back to a previous revision by scaling up and down. The number of previous configurations kept is configurable, and has changed from version to version. Next, we will have a closer look at rollbacks, using the --record option of the kubectl create command, which allows annotation in the resource definition. The create generator does not have a record function. 
-
-```shell
-$ kubectl create deploy ghost --image=ghost --record
-
-$ kubectl get deployments ghost -o yaml
-
-deployment.kubernetes.io/revision: "1" 
-kubernetes.io/change-cause: kubectl create deploy ghost --image=ghost --record
-```
-
-Should an update fail, due to an improper image version, for example, you can roll back the change to a working version with kubectl rollout undo:
-
-```shell
-$ kubectl set image deployment/ghost ghost=ghost:09 --all
-
-$ kubectl rollout history deployment/ghost deployments "ghost":
-
-REVISION   CHANGE-CAUSE
-1 ​         kubectl create deploy ghost --image=ghost --record
-2          kubectl set image deployment/ghost ghost=ghost:09 --all
-
-$ kubectl get pods
-
-NAME                    READY  STATUS            RESTARTS  AGE
-ghost-2141819201-tcths  0/1    ImagePullBackOff  0         1m​
-
-$ kubectl rollout undo deployment/ghost ; kubectl get pods
-
-NAME                    READY  STATUS   RESTARTS  AGE 
-ghost-3378155678-eq5i6  1/1    Running  0         7s
-```
-
-You can roll back to a specific revision with the --to-revision=2 option.
-You can also edit a Deployment using the kubectl edit command.
-You can also pause a Deployment, and then resume.
-
-```shell
-$ kubectl rollout pause deployment/ghost
-
-​$ kubectl rollout resume deployment/ghost
-```
-
-Please note that you can still do a rolling update on ReplicationControllers with the kubectl rolling-update command, but this is done on the client side. Hence, if you close your client, the rolling update will stop.
-
-## Scaling a Deployment
-
-You can scale a Deployment by changing replica count.
-
-```shell
-kubectl scale deployment.v1.apps/nginx-deployment --replicas=10
-```
-
-You can setup an autoscaler for your Deployment and choose the minimum and maximum number of Pods you want to run based on the CPU utilization of your existing Pods.
-
-```shell
-kubectl autoscale deployment.v1.apps/nginx-deployment --min=10 --max=15 --cpu-percent=80
-```
-
-## Deployment Status
-
-A Deployment enters various states during its lifecycle.
-
-### Progressing:
-
-Kubernetes marks a Deployment as progressing when one of the following tasks is performed:
-- The Deployment creates a new ReplicaSet.
-- The Deployment is scaling up its newest ReplicaSet.
-- The Deployment is scaling down its older ReplicaSet(s).
-- New Pods become ready or available (ready for at least MinReadySeconds).
-
-### Complete: 
-
-Kubernetes marks a Deployment as complete when it has the following characteristics:
-- All of the replicas associated with the Deployment have been updated to the latest version you've specified, meaning any updates you've requested have been completed.
-- All of the replicas associated with the Deployment are available.
-- No old replicas for the Deployment are running.
-
-### Failed: 
-
-Your Deployment may get stuck trying to deploy its newest ReplicaSet without ever completing. This can occur due to some of the following factors:
-- Insufficient quota
-- Readiness probe failures
-- Image pull errors
-- Insufficient permissions
-- Limit ranges
-- Application runtime misconfiguration
 
 ## Labels
 
-Part of the metadata of an object is a label. Though labels are not API objects, they are an important tool for cluster administration. They can be used to select an object based on an arbitrary string, regardless of the object type. Labels are immutable as of API version **apps/v1**.
-
-Every resource can contain labels in its metadata. By default, creating a Deployment with **kubectl create** adds a label, as we saw in:
+By default, creating a Deployment with **kubectl create** adds a label, as we saw in:
 
 ```yaml
 .... 
@@ -499,3 +398,232 @@ spec:
     nodeSelector: 
         disktype: ssd
 ```
+
+## Manually Scaling a Deployment
+
+The API server allows for the configurations settings to be updated for most values. There are some immutable values, which may be different depending on the version of Kubernetes you have deployed. 
+
+A common update is to change the number of replicas running. If this number is set to zero, there would be no containers, but there would still be a ReplicaSet and Deployment. This is the backend process when a Deployment is deleted.
+
+The scaling process is completely abstracted from the end user. You just have to tell the Deployment that you want to scale to a specified number of replicas. Kubernetes will take care of the rest.
+
+Say we wanted to scale from one replica to five replicas,
+
+<img src=".\images\scaling-deployment.png"/>
+
+We have two options: using the scale command or changing the value of the replicas attribute for the live object. 
+
+The following set of commands show the effect of scaling up a Deployment. You can scale a Deployment by changing replica count.
+
+```shell
+$ kubectl scale deploy/dev-web --replicas=5
+
+deployment "dev-web" scaled
+
+$ kubectl get deployments
+
+NAME     READY   UP-TO-DATE  AVAILABLE  AGE
+dev-web  5/5     5           5          20s
+```
+
+A Deployment records scaling activities in its events, which we can view using the describe deployment command:
+
+```shell
+$ kubectl describe deployment.apps/dev-web
+```
+
+Non-immutable values can be edited via a text editor, as well. Use edit to trigger an update. For example, to change the deployed version of the nginx web server to an older version: 
+
+```shell
+$ kubectl edit deployment nginx
+....
+      containers:
+      - image: nginx:1.8 #<<---Set to an older version 
+        imagePullPolicy: IfNotPresent
+                name: dev-web
+....
+```
+
+This would trigger a rolling update of the deployment. While the deployment would show an older age, a review of the Pods would show a recent update and older version of the web server application deployed.
+
+## Updating a Deployment
+
+The only thing you need to do is modify the pod template defined in the Deployment resource and Kubernetes will take all the steps necessary to get the actual system state to what’s defined in the resource. Similar to scaling a ReplicationController or ReplicaSet up or down, all you need to do is reference a new image tag in the Deployment’s pod template and leave it to Kubernetes to transform your system so it matches the new desired state.
+
+```shell
+kubectl set image deployment/nginx-deployment nginx=nginx:1.16.1
+```
+
+## Deployment Rollbacks
+
+Deployments make it easy to roll back to the previously deployed version by telling Kubernetes to undo the last rollout of a Deployment. You can roll back to a specific revision by specifying the revision in the undo command.
+
+Deployment ensures that only a certain number of Pods are down while they are being updated. By default, it ensures that at least 75% of the desired number of Pods are up (25% max unavailable).
+
+Deployment also ensures that only a certain number of Pods are created above the desired number of Pods. By default, it ensures that at most 125% of the desired number of Pods are up (25% max surge).
+
+<img src=".\images\p3_deployments_maxsurge_maxunavailable.jpg"/>
+
+With some of the previous ReplicaSets of a Deployment being kept, you can also roll back to a previous revision by scaling up and down. The number of previous configurations kept is configurable, and has changed from version to version. 
+
+## Rolling Out a New Revision
+
+Application development is usually not stagnant. As part of the software development lifecycle, you build a new feature or create a bug fix and deploy the changes to the Kubernetes cluster as part of the release process. In practice, you’d push a new Docker image to the registry bundling the changes so that they can be run in a container. By default, a Deployment rolls out a new container image using a zero-downtime strategy by updating Pods one by one. Figure below shows the rolling update process for a Deployment controlling two replicas from version 1.2.3 to 2.0.0.
+
+Rolling update of Pods managed by a Deployment:
+
+<img src=".\images\rolling-update-pods-managed-deployment.png"/>
+
+Every Deployment keeps a record of the rollout history. Within the history, a new version of a rollout is called a revision. Before experiencing the rollout of a new revision in practice, let’s inspect the initial state of the Deployment named my-deploy. 
+
+Next, we will have a closer look at rollbacks, using the --record option of the kubectl create command, which allows annotation in the resource definition. The create generator does not have a record function. 
+
+The rollout command shows revision 1, which represents the creation of the Deployment with all its settings:
+
+```shell
+$ kubectl create deployment my-deploy --image=nginx:1.14.2 --record
+
+deployment.apps/my-deploy created
+
+$ kubectl describe deployment.apps/my-deploy
+
+...
+deployment.kubernetes.io/revision: "1" 
+...
+
+$ kubectl rollout history deployment my-deploy
+
+deployment.apps/my-deploy
+REVISION  CHANGE-CAUSE
+1         <none>
+
+$ kubectl get pods
+
+```
+
+In the next step, we will update the container image used on the Deployment from nginx:1.14.2 to nginx:1.19.2. To do so, either edit the live object or run the set image command:
+
+```shell
+$ kubectl set image deployment my-deploy nginx=nginx:1.19.2 --all
+
+deployment.apps/my-deploy image updated
+```
+
+Looking at the rollout history again now shows revision 1 and 2. When changing the Pod template of a Deployment—for example, by updating the image—a new ReplicaSet is created. The Deployment will gradually migrate the Pods from the old ReplicaSet to the new one. Inspecting the Deployment details reveals a different name—in this case
+
+```shell
+$ kubectl rollout history deployment my-deploy
+
+deployment.apps/my-deploy
+REVISION  CHANGE-CAUSE
+1         <none>
+2         <none>
+
+$ kubectl describe deployment.apps/my-deploy
+
+...
+NewReplicaSet:   my-deploy-775ccfcbc8 (1/1 replicas created)
+...
+
+$ kubectl rollout status deployment my-deploy
+
+deployment "my-deploy" successfully rolled out
+
+$ kubectl get pods
+
+```
+
+By default, a Deployment persists a maximum of 10 revisions in its history. You can change the limit by assigning a different value to spec.revisionHistoryLimit.
+
+You can also retrieve detailed information about a revision with the rollout history command by providing the revision number using the --revision command-line option. The details of a revision can give you an indication of what exactly changed between revisions:
+
+```shell
+$ kubectl rollout history deployments my-deploy --revision=2
+
+deployment.apps/my-deploy with revision #2
+Pod Template:
+  Labels:	app=my-deploy
+	pod-template-hash=9df7d9c6
+  Containers:
+   nginx:
+    Image:	nginx:1.19.2
+    Port:	<none>
+    Host Port:	<none>
+    Environment:	<none>
+    Mounts:	<none>
+  Volumes:	<none>
+```
+
+The rolling update strategy ensures that the application is always available to end users. This approach implies that two versions of the same application are available during the update process. As an application developer, you have to be aware that convenience doesn’t come without potential side effects. If you happen to introduce a breaking change to the public API of your application, you might temporarily break consumers, as they could hit revision 1 or 2 of the application. You can change the default update strategy of a Deployment by providing a different value to the attribute strategy.type; however, consider the trade-offs. For example, the value Recreate kills all Pods first, then creates new Pods with the latest revision, causing a potential downtime for consumers. Other strategies like blue-green or canary deployments can be set up.
+
+## Rolling Back to a Previous Revision
+
+Despite the best efforts to avoid them by writing extensive test suites, bugs happen. Not only can the rollout command deploy a new version of an application, you can also roll back to an earlier revision. In the previous section, we rolled out revisions 1 and 2. 
+
+Assume revision 2 contains a bug and we need to quickly revert to revision 1. Should an update fail, due to an improper image version, for example, you can roll back the change to a working version with kubectl rollout undo. You can roll back to a specific revision with the --to-revision option. The following command demonstrates the process:
+
+```shell
+$ kubectl rollout undo deployment my-deploy --to-revision=1
+
+deployment.apps/my-deploy rolled back
+```
+
+If you look at the rollout history, you’ll find revisions 2 and 3. Kubernetes recognizes that revisions 1 and 3 are exactly the same. For that reason, the rollout history deduplicates revision 1 effectively; revision 1 became revision 3:
+
+```shell
+$ kubectl rollout history deployment my-deploy
+
+deployment.apps/my-deploy
+REVISION  CHANGE-CAUSE
+2         <none>
+3         <none>
+
+```
+
+The rollback process works pretty much the same way as rolling out a new revision. Kubernetes switches back to the “old” ReplicaSet, drains the Pods with the image nginx:1.19.2, and starts new Pods with the image nginx:1.14.2.
+
+```shell
+$ kubectl get pods
+
+```
+
+You can also edit a Deployment using the kubectl edit command.
+
+You can also pause a Deployment, and then resume.
+
+```shell
+$ kubectl rollout pause deployment/ghost
+
+​$ kubectl rollout resume deployment/ghost
+```
+
+Please note that you can still do a rolling update on ReplicationControllers with the kubectl rolling-update command, but this is done on the client side. Hence, if you close your client, the rolling update will stop.
+
+## Deployment States
+
+A Deployment enters various states during its lifecycle.
+
+### Progressing:
+
+Kubernetes marks a Deployment as progressing when one of the following tasks is performed:
+- The Deployment creates a new ReplicaSet.
+- The Deployment is scaling up its newest ReplicaSet.
+- The Deployment is scaling down its older ReplicaSet(s).
+- New Pods become ready or available (ready for at least MinReadySeconds).
+
+### Complete: 
+
+Kubernetes marks a Deployment as complete when it has the following characteristics:
+- All of the replicas associated with the Deployment have been updated to the latest version you've specified, meaning any updates you've requested have been completed.
+- All of the replicas associated with the Deployment are available.
+- No old replicas for the Deployment are running.
+
+### Failed: 
+
+Your Deployment may get stuck trying to deploy its newest ReplicaSet without ever completing. This can occur due to some of the following factors:
+- Insufficient quota
+- Readiness probe failures
+- Image pull errors
+- Insufficient permissions
+- Limit ranges
+- Application runtime misconfiguration

@@ -21,6 +21,8 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 # Labels and Annotations
 
+Part of the metadata of an object is a label. Though labels are not API objects, they are an important tool for cluster administration. They can be used to select an object based on an arbitrary string, regardless of the object type. Labels are immutable as of API version **apps/v1**.
+
 Labels are an essential tool for querying, filtering, and sorting Kubernetes objects. 
 Annotations only represent descriptive metadata for Kubernetes objects but have no ability to be used for queries. 
 
@@ -80,7 +82,7 @@ spec:
 
 ## Inspecting Labels
 
-You can inspect the labels assigned to a Kubernetes object from different angles. Here, we’ll want to look at the most common ways to identify the labels of a Pod. As with any other runtime information, you can use the describe or get commands to retrieve the labels:
+Every resource can contain labels in its metadata. You can inspect the labels assigned to a Kubernetes object from different angles. Here, we’ll want to look at the most common ways to identify the labels of a Pod. As with any other runtime information, you can use the describe or get commands to retrieve the labels:
 
 ```shell
 $ kubectl describe pod labeled-pod | grep -C 2 Labels:

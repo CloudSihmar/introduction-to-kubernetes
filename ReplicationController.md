@@ -114,3 +114,8 @@ Scaling the number of pods up or down is executed by changing the value of the r
 When you delete a ReplicationController through kubectl delete, the pods are also deleted. 
 
 pods created by a ReplicationController aren’t an integral part of the ReplicationController, and are only managed by it, you can delete only the ReplicationController and leave the pods running by using --cascade=false flag.
+
+## Next Step
+
+ReplicationControllers (RC) ensure that a specified number of pod replicas is running at any one time. ReplicationControllers also give you the ability to perform rolling updates. However, those updates are managed on the client side. This is problematic if the client loses connectivity, and can leave the cluster in an unplanned state. To avoid problems when scaling the ReplicationControllers on the client side, a new resource was introduced in the apps/v1 API group: Deployments.
+

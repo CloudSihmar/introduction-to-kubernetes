@@ -23,9 +23,11 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 In Kubernetes there is few different way to release an application, you have to carefully choose the right strategy to make your infrastructure resilient.
 
-- **Recreate**: Terminate the old version and release the new one.
+- **Recreate**: The Recreate strategy causes all old pods to be deleted before the new ones are created. Use this strategy when your application doesn’t support running multiple versions in parallel and requires the old version to be stopped completely before the new one is started. This strategy does involve a short period of time when your app becomes completely unavailable. Terminate the old version and release the new one. All existing Pods are killed before new ones are created when .spec.strategy.type==Recreate.
 
 ![Kubernetes Deployment Recreate](./images/grafana-recreate.png)
+
+- **RollingUpdate**: Default strategy. The RollingUpdate strategy removes old pods one by one, while adding new ones at the same time, keeping the application available throughout the whole process, and ensuring there’s no drop in its capacity to handle requests. The Deployment updates Pods in a rolling update fashion when .spec.strategy.type==RollingUpdate. You can specify maxUnavailable and maxSurge to control the rolling update process.
 
 - **Ramped**: Release a new version on a rolling update fashion, one after the other.
 
@@ -35,7 +37,7 @@ In Kubernetes there is few different way to release an application, you have to 
 
 ![Kubernetes Deployment Blue-Green](./images/grafana-blue-green.png)
 
-- **Canary**: Release a new version to a subset of users, then proceed to a full rollout.
+- **Canary**: Release a new version to a subset of users, then proceed to a full rollout. If you want to roll out releases to a subset of users or servers using the Deployment, you can create multiple Deployments, one for each release.
 
 ![Kubernetes Deployment Canary](./images/grafana-canary.png)
 
