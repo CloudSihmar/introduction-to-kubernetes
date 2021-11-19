@@ -12,6 +12,7 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 > - Kubernetes in Action - Marko Lukša - Manning Publications
 > - Kubernetes Fundamentals (LFS258) - Timothy Serewicz - The Linux Foundation
 > - Kubernetes for Developers (LFD259) - Timothy Serewicz - The Linux Foundation
+> - Kubernetes Lecture Notes - California Institute of Technology
 > - Certified Kubernetes Application Developer (CKAD) Study Guide - Benjamin Muschko - O'Reilly Media
 > - Getting Started with Kubernetes - Sander van Vugt - Addison-Wesley Professional
 
@@ -170,6 +171,8 @@ Kubernetes represents its functionality for deploying and operating a cloud-nati
 >   - [Pods](Pods.md)
 >       - [Multi-Container Pods](MultiContainerPods.md)
 >       - [Pod Health Probing](PodHealthProbing.md)
+>       - [Security Contexts](SecurityContexts.md)
+>       - [Resource Boundaries](ResourceBoundaries.md)
 >   - [Labels and Annotations](LabelsAndAnnotations.md)
 >   - [ReplicationController](ReplicationController.md)
 >   - [ReplicaSet](ReplicaSet.md)

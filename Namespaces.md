@@ -12,6 +12,7 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 > - Kubernetes in Action - Marko Lukša - Manning Publications
 > - Kubernetes Fundamentals (LFS258) - Timothy Serewicz - The Linux Foundation
 > - Kubernetes for Developers (LFD259) - Timothy Serewicz - The Linux Foundation
+> - Kubernetes Lecture Notes - California Institute of Technology
 > - Certified Kubernetes Application Developer (CKAD) Study Guide - Benjamin Muschko - O'Reilly Media
 > - Getting Started with Kubernetes - Sander van Vugt - Addison-Wesley Professional
 
