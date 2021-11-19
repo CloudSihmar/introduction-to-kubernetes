@@ -37,6 +37,8 @@ By default, Kubernetes does not restrict inter-Pod communication in any shape or
 
 Each service has an IP address and port that never change while the service exists. Clients can open connections to that IP and port, and those connections are then routed to one of the pods backing that service. 
 
+Pod-to-Pod communication should be through a Service. Services provide networking rules for a select set of Pods. Any traffic routed through the Service will be forwarded to Pods. You can assign one of the following types to a Service: ClusterIP, the default type; NodePort; LoadBalancer; or ExternalName. The selected type determines how the Pods are made available—for example, only from within the cluster or accessible from outside of the cluster. In practice, you’ll commonly see a Deployment and a Service working together, though they serve different purposes and can operate independently.
+
 ## Understanding Services
 
 Services are one of the central concepts in Kubernetes. Without a Service, you won’t be able to expose your application to consumers in a stable and predictable fashion. In a nutshell, Services provide discoverable names and load balancing to Pod replicas. The services and Pods remain agnostic from IPs with the help of the Kubernetes DNS control plane component. Similar to a Deployment, the Service determines the Pods it works on with the help of label selection.
