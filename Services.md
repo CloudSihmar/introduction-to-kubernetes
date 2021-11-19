@@ -21,15 +21,25 @@ Available at: https://github.com/kaan-keskin/introduction-to-kubernetes
 
 # Services
 
+You can communicate with a Pod by targeting its IP address. It’s important to recognize that Pods’ IP addresses are virtual and will therefore change to random values over time. A restart of a Pod will automatically assign a new virtual cluster IP address. Therefore, other parts of your system cannot rely on the Pod’s IP address if they need to talk to one another.
+
 Pods need a way of finding other pods if they want to consume the services they provide. Configuring each client application by specifying the exact IP address or hostname of the server providing the service in the client’s configuration files will not work in Kubernetes because:
 
-* Pods are ephemeral—They may come and go at any time
+* Pods are ephemeral—They may come and go at any time.
 * Kubernetes assigns an IP address to a pod after the pod has been scheduled to a node and before it’s started—Clients thus can’t know the IP address of the server pod up front.
 * Horizontal scaling means multiple pods may provide the same service—Each of those pods has its own IP address. 
 
 A Kubernetes Service is a resource created to make a single, constant point of entry to a group of pods providing the same service. 
 
+The Kubernetes primitive Service implements an abstraction layer on top of Pods, assigning a fixed virtual IP fronting all the Pods with matching labels, and that virtual IP is called Cluster IP. This chapter will focus on the ins and outs of Services, and most importantly the exposure of Pods inside or outside of the cluster depending on their declared type.
+
+By default, Kubernetes does not restrict inter-Pod communication in any shape or form. You can define a network policy to mitigate potential security risks. Network policies describe the access rules for incoming and outgoing network traffic to and from Pods. 
+
 Each service has an IP address and port that never change while the service exists. Clients can open connections to that IP and port, and those connections are then routed to one of the pods backing that service. 
+
+## Understanding Services
+
+Services are one of the central concepts in Kubernetes. Without a Service, you won’t be able to expose your application to consumers in a stable and predictable fashion. In a nutshell, Services provide discoverable names and load balancing to Pod replicas. The services and Pods remain agnostic from IPs with the help of the Kubernetes DNS control plane component. Similar to a Deployment, the Service determines the Pods it works on with the help of label selection.
 
 Clients of a service don’t know the location of individual pods providing the service, allowing those pods to be moved around the cluster at any time.
 
@@ -50,9 +60,69 @@ A service, as well as kubectl, uses a selector in order to know which objects to
 - **equality-based**: Filters by label keys and their values. Three operators can be used, such as =, ==, and !=. If multiple values or keys are used, all must be included for a match.
 - **set-based**: Filters according to a set of values. The operators are in, notin, and exists. For example, the use of status notin (dev, test, maint) would select resources with the key of status which did not have a value of dev, test, nor maint.
 
+## Service Types
+
+Every Service needs to define a type. The type determines how the Service exposes the matching Pods, as listed in Table below.
+
+| Type | Description |
+| :--: | :--: |
+| ClusterIP | Exposes the Service on a cluster-internal IP. Only reachable from within the cluster. |
+| NodePort | Exposes the Service on each node’s IP address at a static port. Accessible from outside of the cluster. |
+| LoadBalancer | Exposes the Service externally using a cloud provider’s load balancer. |
+| ExternalName | Maps a Service to a DNS name. |
+
+The most important types you will need to understand are ClusterIP and NodePort. Those types make Pods reachable from within the cluster and from outside of the cluster. 
+
 ## Creating Services
 
 Service is created by posting a JSON or YAML descriptor to the Kubernetes API server.
+
+We’ll look at creating a Service from both the imperative and declarative approach angles. In fact, there are two ways to create a Service imperatively.
+
+The command create service instantiates a new Service. You have to provide the type of the Service as the third, mandatory command-line option. That’s also the case for the default type, ClusterIP. In addition, you can optionally provide the port mapping.
+
+```shell
+$ kubectl create service clusterip nginx-service --tcp=80:80
+
+service/nginx-service created
+```
+
+Instead of creating a Service as a standalone object, you can also expose a Pod or Deployment with a single command. The run command provides an optional --expose command-line option, which creates a new Pod and a corresponding Service with the correct label selection in place:
+
+```shell
+$ kubectl run nginx --image=nginx --restart=Never --port=80 --expose
+
+service/nginx created
+pod/nginx created
+```
+
+For an existing Deployment, you can expose the underlying Pods with a Service using the expose deployment command:
+
+```shell
+$ kubectl expose deployment my-deploy --port=80 --target-port=80
+
+service/my-deploy exposed
+```
+
+The expose command and the --expose command-line option are welcome shortcuts as a means to creating a new Service with a fast turnaround time.
+
+Using the declarative approach, you would define a Service manifest in YAML form as shown in example below. As you can see, the key of the label selector uses the value app. After creating the Service, you will likely have to change the label selection criteria to meet your needs, as the create service command does not offer a dedicated command-line option for it.
+
+A Service defined by a YAML manifest:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  type: ClusterIP
+  selector:
+    app: nginx-service
+  ports:
+  - port: 80
+    targetPort: 80
+```
 
 <img src=".\images\p3_service_yamlexample.jpg"/>
 
@@ -72,6 +142,48 @@ You can give a name to each pod’s port and refer to it by name in the service 
 
 <img src=".\images\p3_service_namedports_service.jpg"/>
 
+## Listing Services
+
+You can observe the most important attributes of a Service when rendering the full list for a namespace. The following command shows the type, the cluster IP, an optional external IP, and the mapped ports:
+
+```shell
+$ kubectl get services
+
+NAME            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+nginx-service   ClusterIP   10.109.125.232   <none>        80/TCP    82m
+```
+
+## Rendering Service Details
+
+The describe command helps with retrieving even more details about a Service. The label selector will be included in the description of the Service, represented by the attribute Selector. That’s important information when troubleshooting a Service object:
+
+```shell
+$ kubectl describe service nginx-service
+
+Name:              nginx-service
+Namespace:         default
+Labels:            app=nginx-service
+Annotations:       <none>
+Selector:          app=nginx-service
+Type:              ClusterIP
+IP:                10.109.125.232
+Port:              80-80  80/TCP
+TargetPort:        80/TCP
+Endpoints:         <none>
+Session Affinity:  None
+Events:            <none>
+```
+
+## Port Mapping
+
+In “Creating Services”, we only briefly touched on the topic of port mapping. The correct port mapping determines if the incoming traffic actually reaches the application running inside of the Pods that match the label selection criteria of the Service. **A Service always defines two different ports: the incoming port accepting traffic and the outgoing port, also called the target port.** Their functionality is best illustrated by example.
+
+Figure below shows a Service that accepts incoming traffic on port 3000. That’s the port defined by the attribute 'ports.port' in the manifest. Any incoming traffic is then routed toward the target port, represented by ports.targetPort. The target port is the same port as defined by the container running inside of the label-selected Pod. In this case, that’s port 80.
+
+Port mapping of a Service to a Pod:
+
+<img src=".\images\port-mapping-service-pod.png"/>
+
 ## Discovering Services
 
 By creating a service, you now have a single and stable IP address and port that you can hit to access your pods. This address will remain unchanged throughout the whole lifetime of the service. Pods behind this service may come and go, their IPs may change, their number can go up or down, but they’ll always be accessible through the service’s single and constant IP address.
@@ -90,11 +202,126 @@ Services don’t link to pods directly. Instead, a resource sits in between—th
 
 Services can be made accessible externally by:
 
+* ClusterIP service type
 * NodePort service type
 * LoadBalancer service type
 * Creating an Ingress resource
 
-<b>Using a NodePort service</b>
+## Accessing a Service with Type ClusterIP
+
+ClusterIP is the default type of Service. It exposes the Service on a cluster-internal IP address. Figure below shows how to reach a Pod exposed by the ClusterIP type from another Pod from within the cluster. You can also create a proxy from outside of the cluster using the kubectl proxy command. Using a proxy is not only meant for production environments but can also be helpful for troubleshooting a Service.
+
+Accessibility of a Service with the type ClusterIP:
+
+<img src=".\images\service-clusterip.png"/>
+
+To demonstrate the use case, we’ll opt for a quick way to create the Pod and the corresponding Service with the same command. The command automatically takes care of properly mapping labels and ports:
+
+```shell
+$ kubectl run nginx --image=nginx --restart=Never --port=80 --expose
+
+service/nginx created
+pod/nginx created
+
+$ kubectl get pod,service
+
+NAME        READY   STATUS    RESTARTS   AGE
+pod/nginx   1/1     Running   0          26s
+
+NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+service/nginx   ClusterIP   10.96.225.204   <none>        80/TCP    26s
+```
+
+Remember that the Service of type ClusterIP can only be reached from within the cluster. To demonstrate the behavior, we’ll create a new Pod running in the same cluster and execute a wget command to access the application. 
+
+Have a look at the cluster IP exposed by the Service—that’s 10.96.225.204. The port is 80. Combined as a single command, you can resolve the application via wget -O- 10.96.225.204:80 from the temporary Pod:
+
+```shell
+$ kubectl run busybox --image=busybox --restart=Never -it -- /bin/sh
+
+# wget -O- 10.96.225.204:80
+
+Connecting to 10.96.225.204:80 (10.96.225.204:80)
+writing to stdout
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+-                    100% |****************************|   612  0:00:00 ETA
+written to stdout
+/ # exit
+```
+
+The proxy command can establish a direct connection to the Kubernetes API server from your localhost. With the following command, we are opening port 9999 on which to run the proxy:
+
+```shell
+$ kubectl proxy --port=9999
+
+Starting to serve on 127.0.0.1:9999
+```
+
+After running the command, you will notice that the shell is going to wait until you break out of the operation. To try talking to the proxy, you will have to open another terminal window. Say you have the curl command-line tool installed on your machine to make a call to an endpoint of the API server. 
+
+The following example uses localhost:9999—that’s the proxy entry point. As part of the URL, you’re providing the endpoint to the Service named nginx running in the default namespace according to the API reference:
+
+```shell
+$ curl -L localhost:9999/api/v1/namespaces/default/services/nginx/proxy
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and \
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+```
+
+## Accessing a Service with Type NodePort
+
+Declaring a Service with type NodePort exposes access through the node’s IP address and can be resolved from outside of the Kubernetes cluster. The node’s IP address can be reached in combination with a port number in the range of 30000 and 32767, assigned automatically upon the creation of the Service. Figure below illustrates the routing of traffic to Pods via a NodePort-typed Service.
+
+Accessibility of a Service with the type NodePort:
+
+<img src=".\images\service-nodeport.png"/>
+
 
 By creating a NodePort service, you make Kubernetes reserve a port on all its nodes (the same port number is used across all of them) and forward incoming connections to the pods that are part of the service.
 
@@ -104,7 +331,62 @@ NodePort service can be accessed not only through the service’s internal clust
 
 <img src=".\images\service_nodeport_access.jpg"/>
 
-<b>Exposing a service through an external load balancer</b>
+Let’s enhance the example from the previous section. We’ll change the existing Service named nginx to use the type NodePort instead of ClusterIP. There are various ways to implement the change. For this example, we’ll use the patch command. When listing the Service, you will find the changed type and the port you can use to reach the Service. The port that has been assigned in this example is 32300:
+
+```shell
+$ kubectl patch service nginx -p '{ "spec": {"type": "NodePort"} }'
+
+service/nginx patched
+
+$ kubectl get service nginx
+
+NAME    TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+nginx   NodePort   10.96.225.204   <none>        80:32300/TCP   3d21h
+```
+
+You should now be able to access the Service using the node IP address and the node port. One way to discover the IP address of the node is by first listing all available nodes and then inspecting the relevant ones for details. In the following commands, we are only running on a single-node Kubernetes cluster, which makes things easy:
+
+```shell
+$ kubectl get nodes
+
+NAME       STATUS   ROLES    AGE   VERSION
+minikube   Ready    master   91d   v1.18.3
+
+$ kubectl describe node minikube | grep InternalIP:
+
+  InternalIP:  192.168.64.2
+
+$ curl 192.168.64.2:32300
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and \
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.co</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+
+```
+
+## Exposing a service through an external load balancer
 
 The service type is set to LoadBalancer. This type of service obtains a load balancer from the infrastructure hosting the Kubernetes cluster. The load balancer will have its own unique, publicly accessible IP address and will redirect all connections to your service. You can thus access your service through the load balancer’s IP address.
 
@@ -112,7 +394,7 @@ The service type is set to LoadBalancer. This type of service obtains a load bal
 
 <img src=".\images\p3_service_loadbalancer_access.jpg"/>
 
-<b>Exposing services externally through an Ingress resource</b>
+## Exposing services externally through an Ingress resource
 
 Each LoadBalancer service requires its own load balancer with its own public IP address, whereas an Ingress only requires one, even when providing access to dozens of services.
 
@@ -163,3 +445,10 @@ When you’re unable to access your pods through the service, you should start b
 * Try connecting to the pod IP directly to confirm your pod is accepting connections on the correct port.
 * If you can’t even access your app through the pod’s IP, make sure your app isn’t only binding to localhost.
 
+## Deployments and Services
+
+A Deployment manages Pods and their replication. A Service routes network requests to a set of Pods. Both primitives use label selection to connect with an associated set of Pods.
+
+Relationship between a Deployment and Service:
+
+<img src=".\images\relationship-deployment-service.png"/>
