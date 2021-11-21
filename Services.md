@@ -126,18 +126,15 @@ spec:
   - port: 80
     targetPort: 80
 ```
-
-<img src=".\images\p3_service_yamlexample.jpg"/>
-
 ## Exposing multiple ports in the same service
 
 Services can support multiple ports. For example, if your pods listened on two ports, 8080 for HTTP and 8443 for HTTPS. You could use a single service to forward both port 80 and 443 to the pod’s ports 8080 and 8443. You don’t need to create two different services in such cases. Using a single, multi-port service exposes all the service’s ports through a single cluster IP.
 
-    When creating a service with multiple ports, you must specify a name for each port.
+When creating a service with multiple ports, you must specify a name for each port.
 
 <img src=".\images\p3_service_multipleport.jpg"/>
 
-    The label selector applies to the service as a whole—it can’t be configured for each port individually. If you want different ports to map to different subsets of pods, you need to create two services.
+The label selector applies to the service as a whole—it can’t be configured for each port individually. If you want different ports to map to different subsets of pods, you need to create two services.
 
 You can give a name to each pod’s port and refer to it by name in the service spec. The biggest benefit of doing so is that it enables you to change port numbers later without having to change the service spec. 
 
