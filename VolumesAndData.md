@@ -358,7 +358,7 @@ spec:
       storage: 8GI
 ```
 
-In the Pod configuration you use created PersistentVolumeClaim as g,ven below:
+In the Pod configuration you use created PersistentVolumeClaim as given below:
 
 ```yaml
     containers:
@@ -369,7 +369,7 @@ In the Pod configuration you use created PersistentVolumeClaim as g,ven below:
           claimName: myclaim
 ```
 
-Another example for the mounting the PersistentVolumeClaim in the Pod can be given as follows. You already learned how to mount a Volume in a Pod. The big difference here, is using s'pec.volumes.persistentVolumeClaim' and providing the name of the PersistentVolumeClaim.
+Another example for the mounting the PersistentVolumeClaim in the Pod can be given as follows. You already learned how to mount a Volume in a Pod. The big difference here, is using 'spec.volumes.persistentVolumeClaim' and providing the name of the PersistentVolumeClaim.
 
 ```yaml
 apiVersion: v1
