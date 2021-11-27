@@ -117,3 +117,13 @@ metadata:
   namespace: linuxcon
 ...
 ```
+
+### kubectl Context's Namespace
+
+You can also specify the default namespace you want to work on, with:
+
+```shell
+$ kubectl config set-context --current --namespace=my-ns
+
+Context "minikube" modified.
+```
